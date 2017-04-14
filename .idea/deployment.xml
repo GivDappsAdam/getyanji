@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="getyanji">
+  <component name="PublishConfigData" serverName="getyanji" uploadOnCheckin="927a9be7-7df8-489b-911a-8ddc9c5a24f8">
     <serverData>
       <paths name="getyanji">
         <serverdata>
@@ -10,5 +10,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="getyanji" />
   </component>
 </project>
