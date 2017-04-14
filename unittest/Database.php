@@ -10,7 +10,7 @@ class Database
 {
     private $dbhost = 'www.getyanji.com';
     private $dbname = 'Amac03yanji';
-    private $dbpass = 'getyanji17$$k';
+    private $dbpass = 'getyanji17$';
     private $dbuser = 'root';
 
     private $mysqli;
