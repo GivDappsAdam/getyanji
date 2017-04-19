@@ -2,7 +2,7 @@
 //URL MAPPER
 $url_mapper = array();
 $url_mapper['error/404/'] = WEB_LINK.'error/404/';
-$url_mapper['login/'] = WEB_LINK.'login/';
+$url_mapper['login/'] = WEB_LINK.'login.php';
 $url_mapper['logout/'] = WEB_LINK.'logout/';
 $url_mapper['index/'] = WEB_LINK.'index/';
 $url_mapper['feed/'] = WEB_LINK.'feed/';

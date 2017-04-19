@@ -8,8 +8,8 @@
  */
 class Database
 {
-    private $dbhost = 'www.getyanji.com';
-    private $dbname = 'Amac03yanji';
+    private $dbhost = 'localhost';
+    private $dbname = 'pearl';
     private $dbpass = 'getyanji17$';
     private $dbuser = 'root';
 
@@ -24,6 +24,8 @@ class Database
         if($this->mysqli->connect_errno){
             trigger_error('Database connection failed: ' . $this->mysqli->connect_error, E_USER_ERROR);
             exit();
+        }else{
+            echo "Connected!";
         }
     }
 
