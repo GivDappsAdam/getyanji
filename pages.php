@@ -65,6 +65,8 @@ if(isset($_POST['send_email'])) {
 				$title = strip_tags(trim($db->escape_value($_POST['title'])));
 				$body = strip_tags(trim($db->escape_value($_POST['body'])));
 				
+				$time = strftime("%Y-%m-%d at %I:%M %p",time());
+				
 				##########
 				## MAILER ##
 				##########
@@ -74,6 +76,7 @@ if(isset($_POST['send_email'])) {
 				$msg .= "<li><b>Email: </b> {$email}</li>";
 				$msg .= "<li><b>Message Title: </b> {$title}</li>";
 				$msg .= "<li><b>Message Details: </b> {$body}</li>";
+				$msg .= "<li><b>Sent at: </b> {$time}</li>";
 				$msg .="</ul><br><br>Please reply as soon as possible.";
 				
 				$title = 'New Contact-Us Message';
@@ -190,7 +193,7 @@ require_once('assets/includes/navbar.php');
 	<?php require_once('assets/includes/footer.php'); ?>
     </div> <!-- /container -->
     <?php require_once('assets/includes/preloader.php'); ?>
-	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.min.js"></script>
+	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.js"></script>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 	<script>

@@ -20,6 +20,9 @@ if(isset($_SESSION[$elhash]) && $_SESSION[$elhash] != "") {
 	$_SESSION[$elhash] = $random_hash;
 }
 
+$admanager1 = MiscFunction::get_function("admanager1");
+$admanager2 = MiscFunction::get_function("admanager2");
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,4 +67,13 @@ if(isset($_SESSION[$elhash]) && $_SESSION[$elhash] != "") {
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+<script async="async" src="https://www.google.com/adsense/search/ads.js"></script>
+
+<!-- other head elements from your page -->
+
+<script type="text/javascript" charset="utf-8">
+(function(g,o){g[o]=g[o]||function(){(g[o]['q']=g[o]['q']||[]).push(
+  arguments)},g[o]['t']=1*new Date})(window,'_googCsa');
+</script>
+
   </head>

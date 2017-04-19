@@ -198,7 +198,7 @@ if (isset($_POST['edit_user'])) {
 						if(!empty($_FILES['upload_files']['name'][$f])) {
 							$$string->attach_file($_FILES['upload_files'], $f);
 							if ($$string->save()) {
-								$images[$f] = mysql_insert_id();
+								$images[$f] = $$string->id;
 							} else {
 								$upl_msg = $lang['alert-upload_error'];
 								$upl_msg .= join("<br />" , $$string->errors);							
@@ -295,7 +295,7 @@ require_once('assets/includes/navbar.php');
 		
 		<div class="publisher" style="margin-top:20px">
 			<p class="name" style="font-size:25px">
-				<b><?php echo $user->f_name . " " . $user->l_name; ?></b>
+				<b><?php echo $user->f_name . " " . $user->l_name; ?> </b><small style="color:#999">@<?php echo $user->username; ?></small>
 				<br><small><?php if($user->comment) { echo $user->comment; } ?></small>
 				
 				<p style="font:size:16px">
@@ -369,9 +369,9 @@ require_once('assets/includes/navbar.php');
 						<img src="<?php echo $quser_avatar; ?>" class="img-circle" style="float:<?php echo $lang['direction-left']; ?>;width:46px;margin-<?php echo $lang['direction-right']; ?>:10px">
 						<p class="name">
 							<?php if($q->anonymous) { echo $lang['user-anonymous']; } else { ?>
-							<?php echo $user->f_name . " " . $user->l_name; ?>
+							<?php echo $user->f_name . " " . $user->l_name; ?> <span style="color:grey"><?php echo $user->username; ?></span>
 							<?php } ?>
-							<br><small><?php if($q->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . " " . date_ago($q->updated_at); } else { echo $lang['index-question-created'] . " " . date_ago($q->created_at); }?></small>
+							<br><small>@<?php echo $user->username; ?> | <?php if($q->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . " " . date_ago($q->updated_at); } else { echo $lang['index-question-created'] . " " . date_ago($q->created_at); }?></small>
 						</p>
 					</p>
 					<br><p>
@@ -406,7 +406,7 @@ require_once('assets/includes/navbar.php');
 				$page=1;
 		}
 		
-		$total_count = Answer::count_answers_for($user->id," ");
+		$total_count = Answer::count_answers_for_user($user->id," ");
 		$pagination = new Pagination($page, $per_page, $total_count);
 		$answers = Answer::get_answers_for_user($user->id ," LIMIT {$per_page} OFFSET {$pagination->offset()} " );
 			
@@ -460,7 +460,7 @@ require_once('assets/includes/navbar.php');
 			
 						<img src="<?php echo $quser_avatar; ?>" class="img-circle" style="float:<?php echo $lang['direction-left']; ?>;width:46px;margin-<?php echo $lang['direction-right']; ?>:10px">
 						<p class="name">
-							<small><?php if($a->updated_at != "0000-00-00 00:00:00") { echo $lang['index-questions-updated'] . date_ago($a->updated_at); } else { echo $lang['index-question-created'] . date_ago($a->created_at); }?>
+							<small>@<?php echo $user->username; ?> | <?php if($a->updated_at != "0000-00-00 00:00:00") { echo $lang['index-questions-updated'] . date_ago($a->updated_at); } else { echo $lang['index-question-created'] . date_ago($a->created_at); }?>
 							<br>
 							<?php echo $lang['user-comment-posted_at'] . ": <a href='{$url_mapper['questions/view']}{$url_type}#answer-{$a->id}' target='_blank'>".strip_tags($q->title). '</a>'; ?>
 							</small>
@@ -679,19 +679,26 @@ require_once('assets/includes/navbar.php');
 								
 				<br><br><br><br><br>
 				
-					<?php if($current_user->can_see_this('adminusers.changemail' , $group) ) { ?>
+					<label for="username" class="control-label"><?php echo $lang['admin-users-username']; ?></label>
+				  <div class="input-group">
+					  <span class="input-group-addon" id="basic-addon1">@</span>
+					  <input type="text" class="form-control " id="username" name="username" placeholder="" value="<?php echo $user->username; ?>" readonly disabled>
+					</div>
+					<br>
+					
+					<?php if($current_user->can_see_this('users.changemail' , $group) ) { ?>
 				  <label for="username" class="control-label"><?php echo $lang['admin-users-email']; ?></label>
 				  <div class="controls"><input type="email" class="form-control " id="username" name="email" placeholder="Unchanged" ></div>
-				  <br><br>
+				  <br>
 					<?php } ?>
 				  
-				  <?php if($current_user->can_see_this('adminusers.changepass' , $group) ) { ?>
+				  <?php if($current_user->can_see_this('users.changepass' , $group) ) { ?>
 				  <label for="password" class="control-label"><?php echo $lang['admin-users-pass']; ?></label>
 				  <div class="controls"><input type="text" class="form-control " id="password" name="password" placeholder="Unchanged" ></div>
-				  <?php } ?>
 				  
-				   <div id="messages"></div>
-							
+				  
+				   <br><div id="messages"></div>
+					<?php } ?>		
 					<br><br>
 								
 								</div>
@@ -844,15 +851,21 @@ require_once('assets/includes/navbar.php');
 			<li><a href="<?php echo $url_mapper['logout/']; ?>" class="col-md-12"><?php echo $lang['index-user-logout']; ?></a></li>
 		</ul>
 		
+		<?php if(isset($admanager2->msg) && $admanager2->msg != '' && $admanager2->msg != '&nbsp;' ) { echo "<br style='clear:both'><hr>".str_replace('\\','',$admanager2->msg)."<br style='clear:both'>"; } else { echo "<br style='clear:both'><br style='clear:both'><br style='clear:both'>";} ?>
+		
 		
 	</div>
+	<?php } else { ?>
+		<div class="col-md-2">
+			<?php if(isset($admanager2->msg) && $admanager2->msg != '' && $admanager2->msg != '&nbsp;' ) { echo str_replace('\\','',$admanager2->msg)."<br style='clear:both'>"; } else { echo "<br style='clear:both'><br style='clear:both'><br style='clear:both'>";} ?>
+		</div>
 	<?php } ?>
 	
 </div>
 	<?php require_once('assets/includes/footer.php'); ?>
     </div> <!-- /container -->
     <?php require_once('assets/includes/preloader.php'); ?>
-	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.min.js"></script>
+	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.js"></script>
 	<script src="<?php echo WEB_LINK; ?>assets/plugins/strongpass/StrongPass.js"></script>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>

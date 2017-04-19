@@ -1,4 +1,4 @@
-<?php require_once(dirname(__FILE__).'/../../route.php');
+<?php require_once(dirname(__FILE__).'/../Loader.php');
 
 $lang = Array();
 $lang['lang'] = 'ar';
@@ -31,6 +31,8 @@ $lang['alert-delete_failed'] = "لم يتم حذف اليبانات ، الرج�
 //Buttons
 $lang['btn-register'] = 'تسجيل';
 $lang['btn-add'] = 'إضافة';
+$lang['btn-edit'] = 'تعديل';
+$lang['btn-delete'] = 'حذف';
 $lang['btn-login'] = 'دخول';
 $lang['btn-submit'] = 'إرسال';
 $lang['btn-update'] = 'تعديل';
@@ -164,7 +166,7 @@ $lang['questions-pending-tag'] = " في إنتظار تأكيد الإدارة";
 $lang['questions-title'] = "إضافة السؤال";
 $lang['questions-q_title'] = "عنوان السؤال";
 $lang['questions-anonymous'] = "إرسال السؤال كـ (غير معرف)";
-$lang['questions-tags'] = "التصنيفات (tag)&nbsp;&nbsp;<span style='color:#b0b0b0'>إكتب التصنيف وأضغط على Enter</span>";
+$lang['questions-tags'] = "المواضيع (tag)&nbsp;&nbsp;<span style='color:#b0b0b0'>إكتب موضوع السؤال وأضغط على Enter</span>";
 $lang['questions-details'] = "تفاصيل السؤال";
 $lang['questions-answer-create_success'] = "تم إضافة الإجابة بنجاح! شكراً لمشاركتك بإثراء الموضوع بهذه المعلومات";
 $lang['questions-answer-create_failed'] = "لم يتم إضافة الإجابة! الرجاء المحاولة لاحقا";
@@ -248,3 +250,20 @@ $lang['notif-report-a_reporter-reject'] = "تم مراجعة التبليغ ال
 $lang['alert-report_success'] = "تم تبليغ الإدارة عن هذا المحتوى وسيتم مراجعته في أقرب وقت";
 $lang['alert-report_failed'] = "لم يتم إرسال التبليغ للإدارة ، الرجاء المحاولة في وقت آخر";
 
+$lang['btn-go_to_q'] = "المحادثة كاملة";
+$lang['admin-section-topics'] = "إدارة المواضيع";
+$lang['admin-topics-title'] = "إدارة مواضيع الموقع";
+$lang['admin-topics-name'] = "إسم الموضوع";
+$lang['admin-topics-description'] = "وصف الموضوع";
+$lang['admin-topics-avatar'] = "الصورة الرمزية";
+
+$lang['admin-section-admanager'] = "إدارة الإعلانات";
+$lang['admin-admanager-title'] = "إدارة الإعلانات";
+$lang['admin-admanager-lt_sidebar'] = "الجانب الأيمن";
+$lang['admin-admanager-rt_sidebar'] = "الجانب الأيسر";
+$lang['admin-admanager-between_q'] = "إعلانات بين الآسئلة";
+$lang['admin-admanager-between_a'] = "اعلانات بين الأجابات";
+
+$lang['notif-a_mention'] = "([NAME]) قام بذكرك في الموضوع ([TITLE]) , إضغط هنا وإنضم للمحادثة !";
+$lang['admin-users-username'] = "إسم المستخدم";
+$lang['alert-username_exists'] = 'إسم المستخدم موجود بالفعل في قاعدة البيانات .. الرجاء المحاولة مرة اخرى';

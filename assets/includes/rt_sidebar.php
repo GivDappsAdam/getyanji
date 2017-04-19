@@ -8,7 +8,10 @@
 			<li><a href="<?php echo $url_mapper['pages/view']; ?>terms" class="col-md-12"><?php echo $lang['pages-terms-title']; ?></a></li>
 			<li><a href="<?php echo $url_mapper['leaderboard/']; ?>" class="col-md-12"><?php echo $lang['pages-leaderboard-title']; ?></a></li>
 		</ul>
-		<br style='clear:both'><br style='clear:both'><br style='clear:both'>
+		
+		<?php if(isset($admanager2->msg) && $admanager2->msg != '' && $admanager2->msg != '&nbsp;' ) { echo "<br style='clear:both'><hr>".str_replace('\\','',$admanager2->msg)."<hr><br style='clear:both'>"; } else { echo "<br style='clear:both'><br style='clear:both'><br style='clear:both'>";} ?>
+		
+		<?php if($current_user->id != '1000') { ?>
 		<i class="glyphicon glyphicon-question-sign"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-your_questions']; ?>
 		<hr>
 		<ul class="feed-ul">
@@ -46,7 +49,7 @@
 		<hr>
 		<ul class="feed-ul">
 			<?php 
-				$total_count = Answer::count_answers_for($current_user->id," ");
+				$total_count = Answer::count_answers_for_user($current_user->id," ");
 				$answers = Answer::get_answers_for_user($current_user->id ," LIMIT 5 " );
 				
 				if($answers) {
@@ -76,6 +79,6 @@
 				}
 			?>
 		</ul>
-		
+		<?php } ?>
 		
 	</div>

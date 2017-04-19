@@ -62,3 +62,20 @@ CREATE TABLE IF NOT EXISTS `[DBTP]reports` (
 ALTER TABLE `[DBTP]reports`ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `[DBTP]reports` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `[DBTP]tags` ADD `description` TEXT NOT NULL AFTER `follows`;
+
+ALTER TABLE `[DBTP]tags` ADD `avatar` INT(11) NOT NULL AFTER `description`;
+
+INSERT INTO `[DBTP]functions` (`function`, `value`, `msg`) 
+SELECT * FROM (SELECT 'admanager1', '&nbsp;', '') AS tmp
+WHERE NOT EXISTS (
+    SELECT `function` FROM `[DBTP]functions` WHERE `function` = 'admanager1'
+) LIMIT 1;
+INSERT INTO `[DBTP]functions` (`function`, `value`, `msg`) 
+SELECT * FROM (SELECT 'admanager2', '&nbsp;', '') AS tmp
+WHERE NOT EXISTS (
+    SELECT `function` FROM `[DBTP]functions` WHERE `function` = 'admanager2'
+) LIMIT 1;
+
+ALTER TABLE `[DBTP]users` ADD `username` VARCHAR(99) NOT NULL AFTER `avatar`;

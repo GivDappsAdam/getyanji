@@ -56,9 +56,9 @@ if(isset($_POST['submit'])) {
 			$db_pass = trim($_POST['db_pass']);
 			$db_table_prefix = trim($_POST['db_table_prefix']);
 			
-			
-			if(@mysql_connect($db_host,$db_user,$db_pass)) {
-				if(@mysql_select_db($db_name)) {
+			@$connection = mysqli_connect($db_host,$db_user,$db_pass);
+			if($connection) {
+				if(@mysqli_select_db($connection,$db_name)) {
 					
 				//write to config.php
 $str = "<?php //Database connection settings
@@ -74,10 +74,10 @@ defined('DBTP') ? null : define ('DBTP' , '{$db_table_prefix}');\r\n\r\n";
 					
 					$step = 2;
 				} else {
-					$step_errors[] = "Database Selection failed! " . mysql_error();
+					$step_errors[] = "Database Selection failed! " . mysqli_error($connection);
 				}
 			} else {
-				$step_errors[] = "MySQL Connection failed! " . mysql_error();
+				$step_errors[] = "MySQLi Connection failed! " . mysqli_connect_error();
 			}
 		} elseif($step == 2) {
 			$url = trim($_POST['url']);
@@ -140,6 +140,7 @@ require_once("url_mapper.php");
 			$f_name = trim($_POST['f_name']);
 			$l_name = trim($_POST['l_name']);
 			$email = trim($_POST['email']);
+			$username = trim($_POST['username']);
 			$password = trim($_POST['password']);
 			
 			$phpass = new PasswordHash(8, true);
@@ -151,15 +152,16 @@ require_once("url_mapper.php");
 			$new_file = str_replace('[ADMINFNAME]', $f_name, $new_file);
 			$new_file = str_replace('[ADMINLNAME]', $l_name, $new_file);
 			$new_file = str_replace('[ADMINEMAIL]', $email, $new_file);
+			$new_file = str_replace('[ADMINUSERNAME]', $username, $new_file);
 			
 			$dbfile = fopen("pearls.sql", "w");
 			fwrite($dbfile, $new_file);
 			fclose($dbfile);
 			
-			mysql_connect(DBH,DBU,DBPW);
-			mysql_select_db(DBN);
+			$con = mysqli_connect(DBH,DBU,DBPW);
+			mysqli_select_db($con, DBN);
 			
-			$split = SplitSQL('pearls.sql' , ';');
+			$split = SplitSQL('pearls.sql' , ';' , $con);
 			if($split != 'finished') {
 				$step_errors[] = $split;
 			}
@@ -352,8 +354,8 @@ require_once("url_mapper.php");
 			<br><br>
 			<div class="form-group clearfix">
 				<label for="url">Facebook API Keys (For Social Login)</label>&nbsp;&nbsp;<a href="#me" class="" data-toggle="modal" data-target="#facebook_modal">[How to get these keys?!]</a><br>
-				<input type="text" class="form-control pull-left" style="width:40%" name="fb_id" id="fb_id" value="" required placeholder="Facebook ID">
-				<input type="text" class="form-control pull-left" style="width:40%" name="fb_secret" id="fb_secret" value="" required placeholder="Facebook Secret">
+				<input type="text" class="form-control pull-left" style="width:40%" name="fb_id" id="fb_id" value="" placeholder="Facebook ID">
+				<input type="text" class="form-control pull-left" style="width:40%" name="fb_secret" id="fb_secret" value="" placeholder="Facebook Secret">
 			</div>
 			<!-- Modal -->
 			<div class="modal fade" id="facebook_modal" tabindex="-1" role="dialog" aria-labelledby="GoogleCaptchaInfo">
@@ -397,8 +399,8 @@ require_once("url_mapper.php");
 			</div>
 			<div class="form-group clearfix">
 				<label for="url">Google API Keys (For Social Login)</label>&nbsp;&nbsp;<a href="#me" class="" data-toggle="modal" data-target="#google_modal">[How to get these keys?!]</a><br>
-				<input type="text" class="form-control pull-left" style="width:40%" name="google_id" id="google_id" value="" required placeholder="Google ID">
-				<input type="text" class="form-control pull-left" style="width:40%" name="google_secret" id="google_secret" value="" required placeholder="Google Secret">
+				<input type="text" class="form-control pull-left" style="width:40%" name="google_id" id="google_id" value="" placeholder="Google ID">
+				<input type="text" class="form-control pull-left" style="width:40%" name="google_secret" id="google_secret" value="" placeholder="Google Secret">
 			</div>
 			<!-- Modal -->
 			<div class="modal fade" id="google_modal" tabindex="-1" role="dialog" aria-labelledby="GoogleCaptchaInfo">
@@ -541,6 +543,10 @@ require_once("url_mapper.php");
 				<label for="f_name">Admin Name</label><br>
 				<input type="text" class="form-control pull-left" style="width:40%" name="f_name" id="f_name" value="" required placeholder="First Name..">
 				<input type="text" class="form-control pull-left" style="width:40%" name="l_name" id="l_name" value="" required placeholder="Last Name..">
+			</div>
+			<div class="form-group clearfix">
+				<label for="Username">Admin Username</label><br>
+				<input type="text" class="form-control" style="width:80%" name="username" id="username" value="admin" required>
 			</div>
 			<div class="form-group clearfix">
 				<label for="email">Admin Email</label><br>

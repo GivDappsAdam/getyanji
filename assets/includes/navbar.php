@@ -1,7 +1,7 @@
 <body>
 
     <!-- Fixed navbar -->
-    <nav class="navbar navbar-default navbar-fixed-top" style="z-index:1111 !important">
+    <nav class="navbar navbar-default navbar-fixed-top" style="z-index:1112 !important">
       <div class="container">
         <div class="navbar-header" style="">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -43,9 +43,9 @@
 				<a href="<?php echo $url_mapper['notifications/']; ?>" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" <?php if($navsec == 'notifications') { echo ' class="current" '; } ?> ><i class="glyphicon glyphicon-bullhorn"></i>&nbsp;&nbsp;<?php echo $lang['index-notification-button'];
 				$notif = Notif::count_everything(" AND user_id = '{$current_user->id}' AND viewed = 0 ");
 				if($notif) {
-					echo "&nbsp;&nbsp;<span class='count-ajax-receptor'><span class='label label-danger'>{$notif}</span></span>";
+					echo "&nbsp;&nbsp;<span class='count-ajax-receptor' style='cursor:pointer'><span class='label label-danger'>{$notif}</span></span>";
 				} else {
-					echo "&nbsp;&nbsp;<span class='count-ajax-receptor'></span>";
+					echo "&nbsp;&nbsp;<span class='count-ajax-receptor' style='cursor:pointer'></span>";
 				}
 				?></a>
 				
@@ -53,9 +53,9 @@
 					<li class="dropdown-header" >
 						<a href="<?php echo $url_mapper['notifications/']; ?>"><b><?php echo $lang['index-notification-see_all']; ?> ></b></a>
 					</li>
-					<ul class="dropdown-menu-list withScroll menu-ajax-receptor" data-height="220" style="width:400px;list-style-type:none">
+					<ul class="dropdown-menu-list withScroll menu-ajax-receptor" data-height="220" style="width:400px;list-style-type:none;cursor:pointer">
 						<?php 
-							$notif = Notif::get_everything(" AND user_id = '{$current_user->id}' AND viewed = 0 ORDER BY created_at DESC LIMIT 10 ");
+							$notif = Notif::get_everything(" AND user_id = '{$current_user->id}' AND viewed = 0 ORDER BY created_at DESC LIMIT 8 ");
 							if($notif) {
 								foreach($notif as $n) {
 									$string = str_replace('\\' , '' , $n->msg);
@@ -138,7 +138,7 @@
 		  
         </div><!--/.nav-collapse -->
       </div>
-	  	<div class="overlay"></div>
+	  	
 	<?php 
 	if($settings['site_status']== "0" && $current_user->prvlg_group == "1" ) {
 		echo "<div class='col-md-12 ' style='background-color:#b92b27'><h4><center>Site Closed for public visitors, Accessible only by admins</center></h4></div>";
@@ -148,9 +148,12 @@
 		echo "<div class='col-md-12 ' style='background-color:#b92b27'><h4><center>Warning! installation folder detected.. You must delete it before using the script</center></h4></div>";
 	}
 	?>
-    </nav>
+    
+	</nav>
 	
-	<form action="<?php echo $url_mapper['questions/create'] ?>" method="post" role="form" enctype="multipart/form-data" class="visible-xs col-sm-10 " style="clear:both;">
+	<div class="overlay" ></div>
+	
+	<form action="<?php echo $url_mapper['questions/create'] ?>" method="post" role="form" enctype="multipart/form-data" class="visible-xs visible-sm col-sm-12 " style="z-index:1111; clear:both;">
 		<div class="input-group" style="z-index:1000">
 		  <input type="text" name="title" class="searchbox-field form-control typeahead " placeholder="<?php echo $lang['index-search-title']; ?>" autofocus>
 		  <span class="input-group-btn" style='z-index:1010;'>

@@ -161,5 +161,5 @@ if(filesize($parent.'/config.php') != '0') {
 	defined('APPSLOGAN') ? null : define ('APPSLOGAN' , $settings['site_description']);
 	defined('APPKEYWORDS') ? null : define ('APPKEYWORDS' , $settings['site_keywords']);
 	defined('URLTYPE') ? null : define ('URLTYPE' , $settings['url_type']);
- }
+}
 ?>

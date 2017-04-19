@@ -152,6 +152,9 @@
         self.$container.addClass('bootstrap-tagsinput-max');
 
       self.$element.trigger($.Event('itemAdded', { item: item, options: options }));
+	  self.$input.typeahead('val', '');
+
+
     },
 
     /**

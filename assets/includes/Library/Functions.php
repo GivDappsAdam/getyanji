@@ -97,7 +97,7 @@ function SplitSQL($file, $delimiter = ';') {
                 if (preg_match('~' . preg_quote($delimiter, '~') . '\s*$~iS', end($query)) === 1) {
                     $query = trim(implode('', $query));
 
-                    if (mysql_query($query) === false) {
+                    if (mysqli_query($query) === false) {
                         echo '<h3>ERROR: ' . $query . '</h3>' . "\n";
                     }
 
@@ -127,7 +127,7 @@ function SplitSQL($file, $delimiter = ';') {
 }
 
 
-function updateSQL($file, $delimiter = ';') {
+function updateSQL($file, $delimiter = ';',$con) {
     set_time_limit(0);
 
     if (is_file($file) === true)
@@ -152,7 +152,7 @@ function updateSQL($file, $delimiter = ';') {
                     //}
 					try {
 					
-						if (mysql_query($query)) {
+						if (mysqli_query($con,$query)) {
 							throw new Exception($query ." : Column already exists!<br/>");
 						}
 					}

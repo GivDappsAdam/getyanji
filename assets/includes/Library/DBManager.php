@@ -12,18 +12,18 @@ class DBManager {
 	private $magic_quotes_active;
 	private $real_escape_string_exists;
 	private function open_connection() {
-		@$this->connection = mysql_connect(DBH,DBU,DBPW);
+		@$this->connection = mysqli_connect(DBH,DBU,DBPW);
 			if(!$this->connection) {
-			fatal_error("connection Failed!" , mysql_error());
+			fatal_error("connection Failed!" , mysqli_connect_error());
 			}  else {
-				$db_select= mysql_select_db(DBN, $this->connection);
+				$db_select= mysqli_select_db($this->connection,DBN);
 					if(!$db_select) {
-					fatal_error("Database Selection Failed!" , mysql_error());
+					fatal_error("Database Selection Failed!" , mysqli_connect_error());
 					}
 				
-					$db_charset= mysql_query("SET NAMES 'utf8'"); 
+					$db_charset= mysqli_set_charset($this->connection,"utf8");
 					if(!$db_charset) {
-					fatal_error("Database charset Encoding Failed!" , mysql_error());
+					fatal_error("Database charset Encoding Failed!" , mysqli_connect_error());
 					}	
 				}
 	}
@@ -31,14 +31,14 @@ class DBManager {
 	function __construct() {
 	$this->open_connection();
 	$magic_quotes_active = get_magic_quotes_gpc();
-	$real_escape_string_exists = function_exists( "mysql_real_escape_string" );
+	$real_escape_string_exists = function_exists( "mysqli_real_escape_string" );
 
 	}
 	
 	public function close_connection() {
 		if(isset($this->connection)) {
-		mysql_close($this->connection);
-		unset($this->connection);		
+		mysqli_close($this->connection);
+		unset($this->connection);
 		}
 	}
 	
@@ -51,8 +51,8 @@ class DBManager {
 		  if($tables == '*')
 		  {
 			$tables = array();
-			$result = mysql_query('SHOW TABLES');
-			while($row = mysql_fetch_row($result))
+			$result = mysqli_query($this->connection, 'SHOW TABLES');
+			while($row = mysqli_fetch_row($result))
 			{
 			  $tables[] = $row[0];
 			}
@@ -65,16 +65,16 @@ class DBManager {
 		  //cycle through
 		  foreach($tables as $table)
 		  {
-			$result = mysql_query('SELECT * FROM '.$table);
-			$num_fields = mysql_num_fields($result);
+			$result = mysqli_query($this->connection, 'SELECT * FROM '.$table);
+			$num_fields = mysqli_num_fields($result);
 			
 			$return.= 'DROP TABLE '.$table.';';
-			$row2 = mysql_fetch_row(mysql_query('SHOW CREATE TABLE '.$table));
+			$row2 = mysqli_fetch_row(mysqli_query($this->connection, 'SHOW CREATE TABLE '.$table));
 			$return.= "\n\n".$row2[1].";\n\n";
 			
 			for ($i = 0; $i < $num_fields; $i++) 
 			{
-			  while($row = mysql_fetch_row($result))
+			  while($row = mysqli_fetch_row($result))
 			  {
 				$return.= 'INSERT INTO '.$table.' VALUES(';
 				for($j=0; $j<$num_fields; $j++) 
@@ -97,68 +97,9 @@ class DBManager {
 		}
 	
 	
-	function autodbback($tables = '*') {
-		ini_set('max_execution_time', 300);
-
-		  //get all of the tables
-		  if($tables == '*')
-		  {
-			$tables = array();
-			$result = mysql_query('SHOW TABLES');
-			while($row = mysql_fetch_row($result))
-			{
-			  $tables[] = $row[0];
-			}
-		  }
-		  else
-		  {
-			$tables = is_array($tables) ? $tables : explode(',',$tables);
-		  }
-		  $return="";
-		  //cycle through
-		  foreach($tables as $table)
-		  {
-			$result = mysql_query('SELECT * FROM '.$table);
-			$num_fields = mysql_num_fields($result);
-			
-			$return.= 'DROP TABLE '.$table.';';
-			$row2 = mysql_fetch_row(mysql_query('SHOW CREATE TABLE '.$table));
-			$return.= "\n\n".$row2[1].";\n\n";
-			
-			for ($i = 0; $i < $num_fields; $i++) 
-			{
-			  while($row = mysql_fetch_row($result))
-			  {
-				$return.= 'INSERT INTO '.$table.' VALUES(';
-				for($j=0; $j<$num_fields; $j++) 
-				{
-				  $row[$j] = addslashes($row[$j]);
-				  $row[$j] = preg_replace("#\n#","\\n",$row[$j]);
-				  if (isset($row[$j])) { $return.= '"'.$row[$j].'"' ; } else { $return.= '""'; }
-				  if ($j<($num_fields-1)) { $return.= ','; }
-				}
-				$return.= ");\n";
-			  }
-			}
-			$return.="\n\n\n";
-		  }
-		//save file
-		$filename ='Database backup ('.strftime('%B %d, %Y at %I,%M %p',time()).').sql';
-		
-			$myFile = ADMINPANEL . DS . "resources" . DS . "auto" . DS .  "db_bkp" . DS . $filename;
-			if ($fh = fopen($myFile, 'wb') ) {
-				fwrite($fh, $return);
-				fclose($fh);
-				return $filename;
-			} else {
-				return false;
-			}
-			
-		}
-	
 	public function query($sql) {
 	
-	$result = mysql_query($sql, $this->connection);
+	$result = mysqli_query($this->connection, $sql);
 	$this->confirm_query($result);
 	return $result;
 	}
@@ -166,7 +107,7 @@ class DBManager {
 	public function escape_value( $value ) {
 		if( $this->real_escape_string_exists) { // PHP v4.3.0 or higher
 			if( $this->magic_quotes_active ) { $value = stripslashes( $value ); }
-			$value = mysql_real_escape_string( $value );
+			$value = mysqli_real_escape_string( $value );
 		} else { // before PHP v4.3.0
 			if( !$this->magic_quotes_active ) { $value = addslashes( $value ); }
 		}
@@ -176,26 +117,38 @@ class DBManager {
 	//database natural related functions .. 
 	
 	public function fetch_array($result) {
-		return mysql_fetch_array($result);
+		return mysqli_fetch_array($result);
 	}
 
 	public function num_rows($result) {
-		return mysql_num_rows($result);
+		return mysqli_num_rows($result);
 	}	
 	
 	public function insert_id() {
-		return mysql_insert_id($this->connection);
+		return mysqli_insert_id($this->connection);
 	}
 	
 	public function affected_rows() {
-		return mysql_affected_rows($this->connection);	
+		return mysqli_affected_rows($this->connection);	
 	}
 	
 	private function confirm_query($result) {
 		if(!$result) {
-			fatal_error ('Query Failed!', mysql_error());
+			fatal_error ('Query Failed!', mysqli_error($this->connection));
 		}
 	}
+}
+
+function mysqli_result($res,$row=0,$col=0){ 
+    $numrows = mysqli_num_rows($res); 
+    if ($numrows && $row <= ($numrows-1) && $row >=0){
+        mysqli_data_seek($res,$row);
+        $resrow = (is_numeric($col)) ? mysqli_fetch_row($res) : mysqli_fetch_assoc($res);
+        if (isset($resrow[$col])){
+            return $resrow[$col];
+        }
+    }
+    return false;
 }
 
 $db = new DBManager();

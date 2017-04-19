@@ -1,7 +1,14 @@
 <?php
 require_once("route.php");
-if ($session->is_logged_in() != true ) { redirect_to("login.php"); }
-$current_user = User::get_specific_id($session->admin_id);
+if ($session->is_logged_in() != true ) {
+	if ($settings['public_access'] == '1') {
+		$current_user = User::get_specific_id(1000);
+	} else {
+		redirect_to($url_mapper['login/']); 
+	}
+} else {
+	$current_user = User::get_specific_id($session->admin_id);
+}
 
 $group = $current_user->prvlg_group;
 if(!isset($settings['site_lang'])) { $settings['site_lang'] = 'English'; }
@@ -14,7 +21,24 @@ if (isset($_GET['type']) && !empty($_GET['type']) && isset($_POST['hash']) && !e
 	$data = $db->escape_value($_POST['data']);
 	
 	switch($type) {
-		
+		###############################################################
+		case 'mention' :
+			
+			$result = User::find_username( $data , $current_user->id, " LIMIT 5");
+			$return = Array();
+			foreach($result as $r) {
+				$e = array();
+				$e['name'] = $r->username;
+				$e['link'] =  $url_mapper['users/view']. $r->id .'/';
+				
+				array_push($return, $e);
+			}
+			
+			if(!empty($return)) {$json = json_encode($return);
+				echo $json;
+			} else { return false; }
+			
+		break;
 		###############################################################
 		case 'check_notifications' :
 		
@@ -521,7 +545,7 @@ if (isset($_GET['type']) && !empty($_GET['type']) && isset($_POST['hash']) && !e
 							if(!empty($_FILES['img']['name'])) {
 								$$string->ajax_attach_file($_FILES['img']);
 								if ($$string->save()) {
-									$img_id = mysql_insert_id();
+									$img_id = $$string->id;
 									$img_cont = File::get_specific_id($img_id);
 									echo UPL_FILES."/".$img_cont->image_path(); 
 								} else {

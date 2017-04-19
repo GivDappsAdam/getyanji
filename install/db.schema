@@ -59,7 +59,7 @@ CREATE TABLE `[DBTP]groups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `[DBTP]groups` (`id`, `name`, `privileges`, `deleted`) VALUES
-(1, 'Admin', 'index.read,pages.read,pages.update,error-404.read,index.notifications,index.post,index.feed,feed.follow,post.read,questions.create,questions.read,questions.interact,questions.create,questions.power,questions.update,questions.delete,answers.read,answers.create,answers.power,answers.update,answers.delete,users.read,users.follow,users.update,users.changepass,users.changemail,users.delete,admin.read,dashboard.read,general_settings.update,profanity_filter.update,pending.read,pending.update,adminusers.read,adminusers.update,adminusers.changepass,adminusers.changemail,adminusers.power,adminusers.suspend,adminusers.delete,groups.read,groups.create,groups.update,groups.delete', 0),
+(1, 'Admin', 'index.read,pages.read,error-404.read,index.notifications,index.post,index.feed,feed.follow,questions.read,questions.interact,post.read,questions.create,questions.power,questions.update,questions.delete,answers.read,answers.create,answers.power,answers.update,answers.delete,users.read,users.follow,users.update,users.changepass,users.changemail,users.delete,admin.read,dashboard.read,general_settings.update,profanity_filter.update,pending.read,pending.update,pages.read,pages.update,adminusers.read,adminusers.update,adminusers.changepass,adminusers.changemail,adminusers.changeusername,adminusers.power,adminusers.suspend,adminusers.delete,admintopics.read,admintopics.update,admintopics.delete,admanager.read,admanager.update,groups.read,groups.create,groups.update,groups.delete', 0),
 (2, 'Guest', 'index.read,pages.read,error-404.read,questions.read,users.read', 0),
 (3, 'Registered Users', 'index.read,pages.read,error-404.read,index.notifications,index.post,index.feed,feed.follow,questions.read,questions.interact,post.read,questions.create,questions.update,answers.read,answers.create,answers.update,users.read,users.follow,users.update,users.changepass,users.delete', 0);
 
@@ -135,6 +135,7 @@ CREATE TABLE `[DBTP]users` (
   `mobile` varchar(15) NOT NULL,
   `address` text NOT NULL,
   `avatar` int(11) NOT NULL,
+  `username` varchar(99) NOT NULL,
   `f_name` varchar(30) NOT NULL,
   `l_name` varchar(30) NOT NULL,
   `comment` varchar(199) NOT NULL,
@@ -148,9 +149,9 @@ CREATE TABLE `[DBTP]users` (
   `deleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='users table to access cp';
 
-INSERT INTO `[DBTP]users` (`id`, `password`, `prvlg_group`, `email`, `mobile`, `address`, `avatar`, `f_name`, `l_name`, `comment`, `about`, `follows`, `disabled`, `deleted`) VALUES
-(1, '[ADMINPASS]', 1, '[ADMINEMAIL]', '', '', 0, '[ADMINFNAME]', '[ADMINLNAME]', 'Pearls! admin', '', 0, 0, 0),
-(1000, '$P$BmTGHpIQ2EiRn9oa121LQgnvsMlTex/', 2, 'guest', '', '', 0, 'Guest', '', '', '', 0, 1, 1);
+INSERT INTO `[DBTP]users` (`id`, `password`, `prvlg_group`, `email`, `mobile`, `address`, `avatar`,`username`, `f_name`, `l_name`, `comment`, `about`, `follows`, `disabled`, `deleted`) VALUES
+(1, '[ADMINPASS]', 1, '[ADMINEMAIL]', '', '', 0, '[ADMINUSERNAME]', '[ADMINFNAME]', '[ADMINLNAME]', 'Pearls! admin', '', 0, 0, 0),
+(1000, '$P$BmTGHpIQ2EiRn9oa121LQgnvsMlTex/', 2, 'guest', '', '', 0,'', 'Guest', '', '', '', 0, 1, 1);
 
 CREATE TABLE `[DBTP]reports` (
   `id` int(11) NOT NULL,
@@ -240,3 +241,22 @@ ALTER TABLE `[DBTP]awards`
   
 ALTER TABLE `[DBTP]users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1001;
+
+  
+UPDATE `[DBTP]functions` SET `value` ='a:11:{s:9:"site_name";s:19:"Pearls! quora clone";s:16:"site_description";s:21:"Questions and Answers";s:13:"site_keywords";s:23:"Questions,Answers,Quora";s:11:"site_status";s:1:"1";s:9:"site_lang";s:7:"English";s:11:"closure_msg";s:48:"Site closed for maintenance.. please stay tuned!";s:8:"url_type";s:4:"slug";s:10:"q_approval";s:1:"0";s:10:"a_approval";s:1:"0";s:9:"reg_group";s:1:"3";s:13:"public_access";s:1:"1";}' WHERE 'function' = 'general_settings' ;
+
+ALTER TABLE `[DBTP]tags` ADD `description` TEXT NOT NULL AFTER `follows`;
+
+ALTER TABLE `[DBTP]tags` ADD `avatar` INT(11) NOT NULL AFTER `description`;
+
+INSERT INTO `[DBTP]functions` (`function`, `value`, `msg`) 
+SELECT * FROM (SELECT 'admanager1', '&nbsp;', '') AS tmp
+WHERE NOT EXISTS (
+    SELECT `function` FROM `[DBTP]functions` WHERE `function` = 'admanager1'
+) LIMIT 1;
+INSERT INTO `[DBTP]functions` (`function`, `value`, `msg`) 
+SELECT * FROM (SELECT 'admanager2', '&nbsp;', '') AS tmp
+WHERE NOT EXISTS (
+    SELECT `function` FROM `[DBTP]functions` WHERE `function` = 'admanager2'
+) LIMIT 1;
+

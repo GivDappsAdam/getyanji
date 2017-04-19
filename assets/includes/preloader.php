@@ -11,6 +11,7 @@
 <script src="<?php echo WEB_LINK; ?>assets/js/ie10-viewport-bug-workaround.js"></script>
 <script type="text/javascript">var PATH = '<?php echo WEB_LINK; ?>';</script>
 <script src="<?php echo WEB_LINK; ?>assets/plugins/Emoji/jquery.emotions.js"></script>
+<script src="<?php echo WEB_LINK; ?>assets/plugins/quickfit/jquery.quickfit.js"></script>
 <script src="<?php echo WEB_LINK; ?>assets/js/jquery.slugit.js"></script>
 
 <script type="text/javascript">
@@ -23,7 +24,8 @@
 			$(".overlay").fadeOut(100);
 		});
 
-
+var fittedwidth = $('.title').width();
+$('.quickfit').quickfit({ max: 22, min: 15, width: fittedwidth, truncate: false});
 $('.typeahead').typeahead({
   hint: true,
   highlight: true,
@@ -66,7 +68,16 @@ function scrollToId(aid){
 }
 
 $('.col-md-9').emotions();
+$('.modal-body').emotions();
 
+$('.open_div').click(function() {
+	var link = $(this).data('link');
+	$('#'+link).modal('show')
+});
+$('.open_link').click(function() {
+	var link = $(this).data('link');
+	window.location.href = link;
+});
 
 <?php if ($session->is_logged_in() == true ) { ?>
 setInterval(function() {
@@ -79,7 +90,7 @@ setInterval(function() {
 			if(test.menu) {
 				$(".menu-ajax-receptor").html('');
 				$.each( test.menu , function( i, l ){
-					$(".menu-ajax-receptor").append("<li style='padding:10px;color:black;border-bottom:1px solid #ededed' onclick=\"location.href='"+ test.menu[i].link +"';\"><i class='fa fa-globe'></i>&nbsp;&nbsp;"+ test.menu[i].string +"</li>");
+					$(".menu-ajax-receptor").append("<li style='padding:10px;color:black;border-bottom:1px solid #ededed;cursor:pointer' onclick=\"location.href='"+ test.menu[i].link +"';\"><i class='fa fa-globe'></i>&nbsp;&nbsp;"+ test.menu[i].string +"</li>");
 				});
 			}
 		});

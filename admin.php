@@ -2,6 +2,196 @@
 $title = "Site Admin"; require_once('assets/includes/header.php');
 
 
+if (isset($_POST['add_topic'])) {
+		if(!$current_user->can_see_this("admintopics.read",$group)) {
+			$msg = $lang['alert-restricted'];
+			redirect_to("{$url_mapper['index/']}&edit=fail&msg={$msg}");
+		}
+		if($_POST['hash'] == $_SESSION[$elhash]){
+			//unset($_SESSION[$elhash]);
+			
+			$db_fields = Array('name', 'description', 'upload_files');
+			
+			$upload_key = array_search('upload_files' , $db_fields);
+			if($upload_key) {
+				unset($db_fields[$upload_key]);
+				$upload_present = true;
+			}
+			
+			foreach($db_fields as $field) {
+				if(isset($_POST[$field])) {
+					$$field = $db->escape_value(str_replace('?','',$_POST[$field]));
+				}
+			}
+			
+			$edited_entry = New Tag();
+			
+			foreach($db_fields as $field) {
+				if(isset($$field)) {
+					$edited_entry->$field = $$field;
+				}
+			}
+			
+			
+			if(isset($upload_present) && $upload_present == true) {
+				$files = '';
+				$f = 0;
+				$images = array();
+				$num_pics = 1;
+				$target = $_FILES['upload_files'];
+				$upload_problems = 0;
+				for ($f ; $f < $num_pics ; $f++) :
+					$file = "file";
+					$string = $$file . "{$f}";
+					$$string = new File();	
+						if(!empty($_FILES['upload_files']['name'][$f])) {
+							$$string->attach_file($_FILES['upload_files'], $f);
+							if ($$string->save()) {
+								$images[$f] = $$string->id;
+							} else {
+								$upl_msg = "{$lang['alert-upload_error']}:<br>";	
+								$upl_msg .= join("<br />" , $$string->errors);							
+								$upload_problems = 1;
+							}
+						}
+				endfor;
+				
+				if(!empty($images)) {
+					$final_string = implode("," , $images);
+					//if($edited_entry->files != NULL) {
+						//$edited_entry->files .= ",". $final_string;
+					//} else {
+						//$edited_entry->files .= $final_string;
+					//}
+					$edited_entry->avatar = $final_string;
+				}
+			}
+			
+			if ($edited_entry->create()) {
+				
+				$msg = $lang['alert-create_success'];
+				if(isset($upl_msg)) {
+					$msg .= $upl_msg;
+				}
+				redirect_to("{$url_mapper['admin/']}&section=topics&edit=success&msg={$msg}");
+			} else {
+				$msg = $lang['alert-update_failed'];
+				if(isset($upl_msg)) {
+					$msg .= $upl_msg;
+				}
+				redirect_to("{$url_mapper['admin/']}&section=topics&edit=fail&msg={$msg}");
+			}
+		} else {
+			$msg = $lang['alert-auth_error'];
+			redirect_to("{$url_mapper['admin/']}&section=topics&edit=fail&msg={$msg}");
+		}
+}
+
+if (isset($_POST['edit_topic'])) {
+		if(!$current_user->can_see_this("admintopics.update",$group)) {
+			$msg = $lang['alert-restricted'];
+			redirect_to("{$url_mapper['index/']}&edit=fail&msg={$msg}");
+		}
+		if($_POST['hash'] == $_SESSION[$elhash]){
+			//unset($_SESSION[$elhash]);
+			
+			$edit_id = $db->escape_value($_POST["edit_id"]);
+			
+			$db_fields = Array('name', 'description', 'upload_files');
+			
+			$upload_key = array_search('upload_files' , $db_fields);
+			if($upload_key) {
+				unset($db_fields[$upload_key]);
+				$upload_present = true;
+			}
+			
+			foreach($db_fields as $field) {
+				if(isset($_POST[$field])) {
+					$$field = $db->escape_value(str_replace('?','',$_POST[$field]));
+				}
+			}
+			
+			$edited_entry = Tag::get_specific_id($edit_id);
+			echo $old_name = $edited_entry->name;
+			
+			foreach($db_fields as $field) {
+				if(isset($$field)) {
+					$edited_entry->$field = $$field;
+				}
+			}
+			
+			echo $name;
+			if(isset($upload_present) && $upload_present == true) {
+				$files = '';
+				$f = 0;
+				$images = array();
+				$num_pics = 1;
+				$target = $_FILES['upload_files'];
+				$upload_problems = 0;
+				for ($f ; $f < $num_pics ; $f++) :
+					$file = "file";
+					$string = $$file . "{$f}";
+					$$string = new File();	
+						if(!empty($_FILES['upload_files']['name'][$f])) {
+							$$string->attach_file($_FILES['upload_files'], $f);
+							if ($$string->save()) {
+								$images[$f] = $$string->id;
+							} else {
+								$upl_msg = "{$lang['alert-upload_error']}:<br>";	
+								$upl_msg .= join("<br />" , $$string->errors);							
+								$upload_problems = 1;
+							}
+						}
+				endfor;
+				
+				if(!empty($images)) {
+					$final_string = implode("," , $images);
+					//if($edited_entry->files != NULL) {
+						//$edited_entry->files .= ",". $final_string;
+					//} else {
+						//$edited_entry->files .= $final_string;
+					//}
+					$edited_entry->avatar = $final_string;
+				}
+			}
+			
+			if ($edited_entry->update()) {
+				if($old_name != $name) {
+					$query = " AND feed LIKE '%{$old_name}%' ";
+					$questions = Question::get_feed_for($current_user->id ,$query,"" );
+					if($questions) {
+						foreach($questions as $q) {
+							$tags = explode(',' , $q->feed);
+							
+							foreach($tags as $k => $v) {
+								if(strtolower($v) == strtolower($old_name)) {
+									unset($tags[$k]);
+									$tags[] = $name;
+								}
+							}
+							$q->feed = implode(',' , $tags);
+							$q->update();
+						}
+					}
+				}
+				$msg = $lang['alert-update_success'];
+				if(isset($upl_msg)) {
+					$msg .= $upl_msg;
+				}
+				redirect_to("{$url_mapper['admin/']}&section=topics&edit=success&msg={$msg}");
+			} else {
+				$msg = $lang['alert-update_failed'];
+				if(isset($upl_msg)) {
+					$msg .= $upl_msg;
+				}
+				redirect_to("{$url_mapper['admin/']}&section=topics&edit=fail&msg={$msg}");
+			}
+		} else {
+			$msg = $lang['alert-auth_error'];
+			redirect_to("{$url_mapper['admin/']}&section=topics&edit=fail&msg={$msg}");
+		}
+}
+
 if (isset($_POST['edit_user'])) {
 		if(!$current_user->can_see_this("adminusers.update",$group)) {
 			$msg = $lang['alert-restricted'];
@@ -52,6 +242,22 @@ if (isset($_POST['edit_user'])) {
 			}
 			}
 			
+			if($current_user->can_see_this('adminusers.changeusername' , $group) ) {
+			$username = $db->escape_value(trim(str_replace(' ' , '' , $_POST['username'])));
+			
+			$current_username = $edited_entry->username;
+			$username_exists = User::check_existance_except("username", $username , $edit_id);
+			
+			if($username_exists) {
+				$msg = $lang['alert-username_exists'];
+				redirect_to("{$url_mapper['admin/']}&id={$edit_id}&hash={$_POST['hash']}&section=users&type=edit&edit=fail&msg={$msg}");
+			}
+			
+			if($username != '' && $username != $current_username) {
+			$edited_entry->username = $username;
+			}
+			}
+			
 			if($current_user->can_see_this('adminusers.power' , $group) ) {
 			$prvlg_group = $db->escape_value($_POST['prvlg_group']);
 			
@@ -59,7 +265,7 @@ if (isset($_POST['edit_user'])) {
 			}
 			
 			
-			if($current_user->can_see_this('users.changepass' , $group) ) {
+			if($current_user->can_see_this('adminusers.changepass' , $group) ) {
 			$current_password = $edited_entry->password;
 			if($password !='' && $password != $current_password ) {
 			$phpass = new PasswordHash(8, true);
@@ -83,7 +289,7 @@ if (isset($_POST['edit_user'])) {
 						if(!empty($_FILES['upload_files']['name'][$f])) {
 							$$string->attach_file($_FILES['upload_files'], $f);
 							if ($$string->save()) {
-								$images[$f] = mysql_insert_id();
+								$images[$f] = $$string->id;
 							} else {
 								$upl_msg = "{$lang['alert-upload_error']}:<br>";	
 								$upl_msg .= join("<br />" , $$string->errors);							
@@ -260,6 +466,43 @@ if (isset($_POST['edit_pages'])) {
 		}
 }
 
+if (isset($_POST['edit_adblocks'])) {
+		if(!$current_user->can_see_this("admanager.update",$group)) {
+			$msg = $lang['alert-restricted'];
+			redirect_to("{$url_mapper['admin/']}section=admanager&edit=fail&msg={$msg}");
+		}
+		if($_POST['hash'] == $_SESSION[$elhash]){
+			//unset($_SESSION[$elhash]);
+			
+			$between_q = $_POST['between-q'];
+			$between_a = $_POST['between-a'];
+			$lt_sidebar = $_POST['lt-sidebar'];
+			$rt_sidebar = $_POST['rt-sidebar'];
+			
+			$admanager1->value = $between_q;
+			$admanager1->msg = $between_a;
+			$admanager2->value = $lt_sidebar;
+			$admanager2->msg = $rt_sidebar;
+			
+			$admanager1->update();
+			$admanager2->update();
+			
+			//if ($contact_us->update() || $about_us->update() || $privacy_policy->update() || $terms->update() ) {
+				
+				//Log::log_action($current_user->id , "Add Group object" , "Add new Group object to application ({$new_entry->name})" );
+				
+				$msg = $lang['alert-update_success'];
+				redirect_to("{$url_mapper['admin/']}section=admanager&edit=success&msg={$msg}");
+			/*} else {
+				$msg = "Unable to save data, please try again";
+				redirect_to("{$url_mapper['admin/']}section=pages&edit=fail&msg={$msg}");
+			}*/
+		} else {
+			$msg = $lang['alert-auth_error'];
+			redirect_to("{$url_mapper['admin/']}section=admanager&edit=fail&msg={$msg}");
+		}
+}
+
 if (isset($_POST['edit_profanity_filter'])) {
 		if(!$current_user->can_see_this("profanity_filter.update",$group)) {
 			$msg = $lang['alert-restricted'];
@@ -368,11 +611,19 @@ $sections = Array('index.read,pages.read,error-404.read|Home' =>
 																					),
 								'adminusers.read|Show Users profiles' => Array(
 																						'adminusers.update|Edit users profiles',
-																						'adminusers.changepass|Edit users passwords',
-																						'adminusers.changemail|Edit users emails',
+																						'adminusers.changepass|Edit users password',
+																						'adminusers.changemail|Edit users email',
+																						'adminusers.changeusername|Edit users username',
 																						'adminusers.power|Change users privileges',
 																						'adminusers.suspend|Suspend accounts',
 																						'adminusers.delete|Delete users profiles'
+																					),
+								'admintopics.read|Show topics page' => Array(
+																						'admintopics.update|Edit Topic',
+																						'admintopics.delete|Delete Topic'
+																					),
+								'admanager.read|Show AdManager page' => Array(
+																						'admanager.update|Edit Ads Blocks'
 																					),
 								'groups.read|Show User Group Privileges page' => Array(
 																								'groups.create|Create new privilege groups', 
@@ -415,6 +666,8 @@ if($current_user->can_see_this('pending.read' , $group)) {
 			<?php if($current_user->can_see_this('adminusers.read' , $group)) { ?><li><a data-toggle="tab" href="#users" class="col-md-12"><?php echo $lang['admin-section-users']; ?></a></li><?php } ?>
 			<?php if($current_user->can_see_this('groups.read' , $group)) { ?><li><a data-toggle="tab" href="#groups" class="col-md-12"><?php echo $lang['admin-section-groups']; ?></a></li><?php } ?>
 			<?php if($current_user->can_see_this('pages.update' , $group)) { ?><li><a data-toggle="tab" href="#pages" class="col-md-12"><?php echo $lang['admin-section-pages']; ?></a></li><?php } ?>
+			<?php if($current_user->can_see_this('admintopics.read' , $group)) { ?><li><a data-toggle="tab" href="#topics" class="col-md-12"><?php echo $lang['admin-section-topics']; ?></a></li><?php } ?>
+			<?php if($current_user->can_see_this('admanager.read' , $group)) { ?><li><a data-toggle="tab" href="#admanager" class="col-md-12"><?php echo $lang['admin-section-admanager']; ?></a></li><?php } ?>
 			<?php if($current_user->can_see_this('profanity_filter.update' , $group)) { ?><li><a data-toggle="tab" href="#profanity_filter" class="col-md-12"><?php echo $lang['admin-section-filter']; ?></a></li><?php } ?>
 			
 		</ul>
@@ -466,6 +719,12 @@ if($current_user->can_see_this('pending.read' , $group)) {
 						break;
 						case 'reports':
 							$section = 'reports';
+						break;
+						case 'topics':
+							$section = 'topics';
+						break;
+						case 'admanager':
+							$section = 'admanager';
 						break;
 						case 'pages':
 							$section = 'pages';
@@ -852,7 +1111,12 @@ if($current_user->can_see_this('pending.read' , $group)) {
 			<?php } ?>
 			<?php if($current_user->can_see_this('adminusers.read' , $group)) { ?>
 			<div id="users" class="tab-pane fade <?php if($section == 'users') { echo 'in active'; } ?>">
-				<h3><?php echo $lang['admin-users-title']; ?></h3>
+				<h3><?php echo $lang['admin-users-title']; ?>
+				
+				<?php if($section == 'users' && isset($_GET['type']) && $_GET['type'] != '' ) { ?>
+				<a href="<?php echo $url_mapper['admin/']; ?>/&section=users" class="btn btn-sm btn-primary"><i class="fa fa-arrow-<?php echo $lang['direction-left']; ?>"></i>&nbsp;<?php echo $lang['btn-back']; ?></a>
+				<?php } ?>
+				</h3>
 				
 				
 				<?php if($section == 'users' && isset($_GET['type']) && $_GET['type'] == 'new' ) {
@@ -944,7 +1208,17 @@ if($current_user->can_see_this('pending.read' , $group)) {
 								
 				<br><br><br><br><br>
 				
-				  <?php if($current_user->can_see_this('adminusers.changemail' , $group) ) { ?>
+				  <label for="username" class="control-label"><?php echo $lang['admin-users-username']; ?></label>
+				  
+					<div class="input-group">
+					  <span class="input-group-addon" id="basic-addon1">@</span>
+					  <input type="text" class="form-control " id="username" name="username" placeholder="" value="<?php echo $user->username; ?>"  <?php if(!$current_user->can_see_this('adminusers.changeusername' , $group) ) { ?> disabled readonly <?php } ?> >
+					</div>
+				  
+				  
+				  <br>
+					
+					<?php if($current_user->can_see_this('adminusers.changemail' , $group) ) { ?>
 				  <label for="username" class="control-label"><?php echo $lang['admin-users-email']; ?></label>
 				  <div class="controls"><input type="email" class="form-control " id="username" name="email" placeholder="Unchanged" ></div>
 				  <?php } ?>
@@ -1076,7 +1350,7 @@ if($current_user->can_see_this('pending.read' , $group)) {
 							
 							$usergroup = Group::get_specific_id($obj->prvlg_group);
 							$questions = Question::count_questions_for($obj->id," ");
-							$answers = Answer::count_answers_for($obj->id," ");
+							$answers = Answer::count_answers_for_user($obj->id," ");
 							
 						?>
 						<tr <?php if($obj->disabled) { echo ' style="color:red" '; } ?> >
@@ -1174,6 +1448,403 @@ if($current_user->can_see_this('pending.read' , $group)) {
 				
 				
 			</div>
+			<?php } ?>
+			
+			
+			<?php if($current_user->can_see_this('admintopics.read' , $group)) { ?>
+			<div id="topics" class="tab-pane fade <?php if($section == 'topics') { echo 'in active'; } ?>">
+				<h3><?php echo $lang['admin-topics-title']; ?>
+				<?php
+					$back = $url_mapper['admin/'].'&section=topics';
+					$add = $url_mapper['admin/'].'&section=topics&type=new&hash='.$random_hash;
+					if(isset($_GET['ref']) && $_GET['ref'] != '' ) { $back = $url_mapper['feed/']."{$_GET['ref']}/"; } 
+				?>
+				<?php if($section == 'topics' && isset($_GET['type']) && $_GET['type'] != '' ) { ?>
+				<a href="<?php echo $back; ?>" class="btn btn-sm btn-primary"><i class="fa fa-arrow-<?php echo $lang['direction-left']; ?>"></i>&nbsp;<?php echo $lang['btn-back']; ?></a>
+				<?php } else { ?>
+				<a href="<?php echo $add; ?>" class="btn btn-sm btn-danger"><i class="fa fa-plus"></i>&nbsp;<?php echo $lang['btn-add']; ?></a>
+				<?php } ?>
+				</h3>
+				<hr>
+				
+				<?php if($section == 'topics' && isset($_GET['type']) && $_GET['type'] == 'new' ) {
+				?>
+				
+				
+				<form method="post" action="<?php echo $url_mapper['admin/']; ?>/" enctype="multipart/form-data">
+			
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="name"><?php echo $lang['admin-topics-name']; ?></label>
+									<input type="text" class="form-control" name="name" id="name" placeholder="Topic Name.." required value="">
+								<br>
+								<label class="control-label" for="img1_upl"><?php echo $lang['admin-topics-avatar']; ?></label>
+								<div class="controls">
+									
+									<img src="<?php echo WEB_LINK.'assets/img/topic.png'; ?>" class="img-polaroid img-circle" style="float:<?php echo $lang['direction-left']; ?>; padding:5px; margin-<?php echo $lang['direction-right']; ?>:10px; width:64px; height:64px" id="img1">
+									<div style="height:64px; padding-top: 12px;width:200px;float:<?php echo $lang['direction-left']; ?>">
+										<input class="text-input " type="file" name="upload_files[]" id="img1_upl"/><br/>
+									</div>
+								
+								</div>
+								
+							</div>
+							
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								
+								<label for="description"><?php echo $lang['admin-topics-description']; ?></label>
+								<textarea class="form-control" rows='5' name="description" id="description" placeholder="Topic Description.."></textarea>
+								<br>
+								
+								
+								</div>
+						</div>
+						
+					</div>
+					
+							<center>
+								<input class="btn btn-success" type="submit" name="add_topic" value="<?php echo $lang['btn-submit']; ?>">
+							</center>
+						
+					<?php 
+						$_SESSION[$elhash] = $random_hash;
+						echo "<input type=\"hidden\" name=\"hash\" value=\"".$random_hash."\" readonly/>";
+					?>
+					</form>
+				
+				
+				
+				<?php } elseif($section == 'topics' && isset($_GET['type']) && $_GET['type'] == 'edit'  && isset($_GET['id']) && is_numeric($_GET['id']) && isset($_GET['hash'])) {
+					if(!Tag::check_id_existance($db->escape_value($_GET['id']))) {
+						redirect_to($url_mapper['error/404/']);
+					}
+					$topic = Tag::get_specific_id($db->escape_value($_GET['id']));
+					if($topic->avatar) {
+						$img = File::get_specific_id($topic->avatar);
+						$quser_avatar= WEB_LINK."assets/".$img->image_path();
+						$quser_avatar_path = UPLOADPATH."/".$img->image_path();
+						if (!file_exists($quser_avatar_path)) {
+							$quser_avatar = WEB_LINK.'assets/img/topic.png';
+						}
+					} else {
+						$quser_avatar = WEB_LINK.'assets/img/topic.png';
+					}
+				?>
+				
+				
+				<form method="post" action="<?php echo $url_mapper['admin/']; ?>/" enctype="multipart/form-data">
+			
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="name"><?php echo $lang['admin-topics-name']; ?></label>
+									<input type="text" class="form-control" name="name" id="name" placeholder="Topic Name.." required value="<?php echo $topic->name; ?>">
+								<br>
+								<label class="control-label" for="img1_upl"><?php echo $lang['admin-topics-avatar']; ?></label>
+								<div class="controls">
+									
+									<img src="<?php echo $quser_avatar; ?>" class="img-polaroid img-circle" style="float:<?php echo $lang['direction-left']; ?>; padding:5px; margin-<?php echo $lang['direction-right']; ?>:10px; width:64px; height:64px" id="img1">
+									<div style="height:64px; padding-top: 12px;width:200px;float:<?php echo $lang['direction-left']; ?>">
+										<input class="text-input " type="file" name="upload_files[]" id="img1_upl"/><br/>
+									</div>
+								
+								</div>
+								
+							</div>
+							
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								
+								<label for="description"><?php echo $lang['admin-topics-description']; ?></label>
+								<textarea class="form-control" rows='5' name="description" id="description" placeholder="Topic Description.."><?php echo strip_tags($topic->description); ?></textarea>
+								<br>
+								
+								
+								</div>
+						</div>
+						
+					</div>
+					
+							<center>
+								<input class="btn btn-success" type="submit" name="edit_topic" value="<?php echo $lang['btn-submit']; ?>">
+							</center>
+						
+					<?php 
+						$_SESSION[$elhash] = $random_hash;
+						echo "<input type=\"hidden\" name=\"edit_id\" value=\"".$topic->id."\" readonly/>";
+						echo "<input type=\"hidden\" name=\"hash\" value=\"".$random_hash."\" readonly/>";
+					?>
+					</form>
+				
+				
+				
+				
+				<?php
+				} elseif($section == 'topics' && isset($_GET['type']) && $_GET['type'] == 'delete'  && isset($_GET['id']) && is_numeric($_GET['id']) && isset($_GET['hash'])) {
+					$id = $db->escape_value($_GET['id']);
+					
+					if(!Tag::check_id_existance($id)) {
+						redirect_to("{$url_mapper['error/404/']}");
+					}
+					
+					$this_obj = Tag::get_specific_id($id);
+					
+					if(!$current_user->can_see_this("admintopics.delete",$group)) {
+						$msg = $lang['alert-restricted'];
+						redirect_to("{$url_mapper['admin/']}section=topics&edit=fail&msg={$msg}");
+					}
+					if($id == "1") {
+						$msg = $lang['alert-restricted'];
+						redirect_to("{$url_mapper['admin/']}section=topics&edit=fail&msg={$msg}");
+					}
+					
+					//Check Subscriptions!!
+					$tags = FollowRule::get_subscriptions('tag',$this_obj->id , 'obj_id' , '');
+					if($tags) {
+						foreach($tags as $tag) {
+							$tag->delete();
+						}
+					}
+					if($this_obj->delete()) {
+						$msg = $lang['alert-delete_success'];
+						if(isset($_GET['ref']) && $_GET['ref'] == 'index' ) {  
+							redirect_to("{$url_mapper['index/']}&edit=success&msg={$msg}");
+						} else {
+							redirect_to("{$url_mapper['admin/']}section=topics&edit=success&msg={$msg}");
+						}
+					} else {
+						$msg = $lang['alert-delete_failed'];
+						redirect_to("{$url_mapper['admin/']}section=topics&edit=fail&msg={$msg}");
+					}
+					
+					
+				} else { ?>
+				
+					<table class="table table-hover table-bordered">
+                      <thead>
+                        <tr>
+                          <th style='width:10px'>#</th>
+                          <th><?php echo $lang['admin-topics-name']; ?></th><th><?php echo $lang['admin-topics-description']; ?></th>
+						  <th style='width:150px'><i class="fa fa-wrench"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php 
+							
+							if (isset($_GET['per_page']) && is_numeric($_GET['per_page']) ) {
+								$per_page= $_GET['per_page'];
+							} else {
+								$per_page=20;
+							}
+							
+							if (isset($_GET['page']) && is_numeric($_GET['page']) ) {
+								$page= $_GET['page'];
+							} else {
+								$page=1;
+							}
+							
+							
+							$query = '';
+							if(isset($_GET['search']) && $_GET['search'] == true && isset($_GET['data']) ) {
+								$query = " AND (name LIKE '%" . $db->escape_value($_GET['data']) .  "%' OR description LIKE '%" . $db->escape_value($_GET['data']) .  "%') ";
+							}
+							
+							$total_count = Tag::count_everything(" AND deleted = 0 {$query} ");
+							$pagination = new Pagination($page, $per_page, $total_count);
+							$all_obj= Tag::get_everything(" AND deleted = 0 {$query} "," LIMIT {$per_page} OFFSET {$pagination->offset()} ");
+						
+							
+							$i= (($page-1) * $per_page) + 1;
+							
+							
+							foreach($all_obj as $obj) :
+							
+							if($obj->avatar) {
+								$pic = "<a href=\"#modal-image-{$obj->id}\" data-toggle='modal' class='btn btn-sm btn-icon btn-rounded btn-warning' data-rel='' data-placement='top' title='Avatar' data-original-title='Avatar'><i class='fa fa-search'></i></a>";
+							} else {
+								$pic = "";
+							}
+							
+							if($current_user->can_see_this("admintopics.update",$group)) {
+								$edit = "<a href=\"{$url_mapper['admin/']}/&section=topics&id={$obj->id}&type=edit&hash={$random_hash}\" class='btn btn-sm btn-icon btn-rounded btn-primary' data-rel='' data-placement='top' title='Edit' data-original-title='Edit'  ><i class='fa fa-pencil'></i></a>";
+							} else {
+								$edit = "<a href=\"#me\" class='btn btn-sm btn-icon btn-rounded btn-default' data-rel='' data-placement='top' title='Edit (unavailable)' data-original-title='Edit (unavailable)'  ><i class='fa fa-pencil'></i></a>";
+							}
+							
+							if($current_user->can_see_this("admintopics.delete",$group)) {
+								$delete = "<a href=\"{$url_mapper['admin/']}/&section=topics&id={$obj->id}&type=delete&hash={$random_hash}\" class='btn btn-sm btn-icon btn-rounded btn-danger' data-rel='' data-placement='top' title='delete' data-original-title='delete'   onclick=\"return confirm('Are you sure you want to delete this topic?');\" ><i class='fa fa-times'></i></a>";
+							} else {
+								$delete = "<a href=\"#me\" class='btn btn-sm btn-icon btn-rounded btn-default' data-rel='' data-placement='top' title='delete (unavailable)' data-original-title='delete (unavailable)'  ><i class='fa fa-times'></i></a>";
+							}
+							
+							
+						?>
+						<tr >
+                          <td><?php echo $i; ?></td>
+                          <td><?php echo $obj->name;?></td>
+						  <td><?php echo $obj->description; ?></td>
+						  <td><div class="btn-group"><?php echo $pic .$edit . $delete; ?></div></td>
+						  
+						<?php 
+							if(isset($obj->avatar) && $obj->avatar) {
+								$img = File::get_specific_id($obj->avatar);
+								$link = UPL_FILES."/".$img->image_path();
+						?>
+						<div class="modal fade modal-image" id="modal-image-<?php echo $obj->id; ?>" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+							<div class="modal-dialog">
+							  <div class="modal-content">
+								<div class="modal-header">
+								  <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+								</div>
+								<div class="modal-body">
+								  <img src="<?php echo $link; ?>" alt="picture 1" class="img-responsive">
+								</div>
+								<div class="modal-footer">
+								  <p><?php echo $obj->name; ?></p>
+								</div>
+							  </div>
+							</div>
+						  </div>
+						<?php 
+							}
+						?>
+                        </tr>
+                        
+						<?php 
+							$i++;
+							endforeach;
+						?>
+                      </tbody>
+                    </table>
+					
+					<?php
+					
+					if(isset($pagination) && $pagination->total_pages() > 1) {
+					?>
+					<div class="pagination btn-group">
+					
+							<?php
+							if ($pagination->has_previous_page()) {
+								$page_param = $url_mapper['admin/'];
+								$page_param .= "&section=topics&page=";
+								$page_param .= $pagination->previous_page();
+
+							echo "<a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-left']}\"></i></a>";
+							} else {
+							?>
+							<a class="btn btn-default" type="button"><i class="glyphicon glyphicon-chevron-<?php echo $lang['direction-left']; ?>"></i></a>
+							<?php
+							}
+							
+							for($p=1; $p <= $pagination->total_pages(); $p++) {
+								if($p == $page) {
+									echo "<a class=\"btn btn-default active\" type=\"button\">{$p}</a>";
+								} else {
+									$page_param = $url_mapper['admin/'];
+									$page_param .= "&section=topics&page=";
+									$page_param .= $p;
+
+									echo "<a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\">{$p}</a>";
+								}
+							}
+							if($pagination->has_next_page()) {
+								$page_param = $url_mapper['admin/'];
+								$page_param .= "&section=topics&page=";
+								$page_param .= $pagination->next_page();
+
+							echo " <a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-right']}\"></i></a> ";
+							} else {
+							?>
+							<a class="btn btn-default" type="button"><i class="glyphicon glyphicon-chevron-<?php echo $lang['direction-right']; ?>"></i></a>
+							<?php
+							}
+							?>
+					
+					</div>
+					<?php
+					}
+					?>
+				
+				
+				<?php } ?>
+				
+				
+			</div>
+			<?php } ?>
+			<?php if($current_user->can_see_this('admanager.read' , $group)) { ?>
+			<div id="admanager" class="tab-pane fade <?php if($section == 'admanager') { echo 'in active'; } ?>">
+				
+				<form method="post" action="<?php echo $url_mapper['admin/']; ?>">
+			
+				<h3 class="page-header"><?php echo $lang['admin-admanager-title']; ?></h3>
+				
+					<div class="row">
+						
+						<ul class="nav nav-tabs">
+						  <li class="active"><a data-toggle="tab" href="#between-q" href="#me"><?php echo $lang['admin-admanager-between_q']; ?></a></li>
+						  <li><a data-toggle="tab" href="#between-a" href="#me" ><?php echo $lang['admin-admanager-between_a']; ?></a></li>
+						  <li><a data-toggle="tab" href="#lt-sidebar" href="#me"><?php echo $lang['admin-admanager-lt_sidebar']; ?></a></li>
+						  <li><a data-toggle="tab" href="#rt-sidebar" href="#me"><?php echo $lang['admin-admanager-rt_sidebar']; ?></a></li>
+						</ul>
+						<div class="tab-content">
+							<div id="between-q" class="tab-pane fade in active">
+								<br><p>Adblock Type:
+									<div class="btn-group"><a href="#me" class="toggle-code btn btn-default "><i class='fa fa-desktop'></i> Other</a>
+									<a href="#me" class="untoggle-code btn btn-default active"><i class='fa fa-code'></i> Google Adsense</a></div>
+								</p>
+								
+								<textarea class="custom-summernote form-control" name="between-q" rows="5" placeholder=""><?php echo $admanager1->value; ?></textarea>
+								<br><br>
+							</div>
+							<div id="between-a" class="tab-pane fade in ">
+								<br><p>Adblock Type:
+									<div class="btn-group"><a href="#me" class="toggle-code2 btn btn-default "><i class='fa fa-desktop'></i> Other</a>
+									<a href="#me" class="untoggle-code2 btn btn-default active"><i class='fa fa-code'></i> Google Adsense</a></div>
+								</p>
+								
+								<textarea class="custom-summernote2 form-control" name="between-a" rows="5"><?php echo $admanager1->msg; ?></textarea>
+								<br><br>
+							</div>
+							<div id="lt-sidebar" class="tab-pane fade in ">
+								<br><p>Adblock Type:
+									<div class="btn-group"><a href="#me" class="toggle-code3 btn btn-default "><i class='fa fa-desktop'></i> Other</a>
+									<a href="#me" class="untoggle-code3 btn btn-default active"><i class='fa fa-code'></i> Google Adsense</a></div>
+								</p>
+								
+								<textarea class="custom-summernote3 form-control" name="lt-sidebar" rows="5"><?php echo $admanager2->value; ?></textarea>
+								<br><br>
+							</div>
+							<div id="rt-sidebar" class="tab-pane fade in ">
+								<br><p>Adblock Type:
+									<div class="btn-group"><a href="#me" class="toggle-code4 btn btn-default "><i class='fa fa-desktop'></i> Other</a>
+									<a href="#me" class="untoggle-code4 btn btn-default active"><i class='fa fa-code'></i> Google Adsense</a></div>
+								</p>
+								
+								<textarea class="custom-summernote4 form-control" name="rt-sidebar" rows="5"><?php echo $admanager2->msg; ?></textarea>
+								<br><br>
+							</div>
+							
+						</div>
+						
+					</div>
+					
+							<center>
+								<input class="btn btn-success" type="submit" name="edit_adblocks" value="<?php echo $lang['btn-submit']; ?>">
+							</center>
+						
+					<?php 
+						$_SESSION[$elhash] = $random_hash;
+						echo "<input type=\"hidden\" name=\"hash\" value=\"".$random_hash."\" readonly/>";
+					?>
+					</form>
+				
+				
+			</div>
+			
 			<?php } ?>
 			<?php if($current_user->can_see_this('groups.read' , $group)) { ?>
 			<div id="groups" class="tab-pane fade <?php if($section == 'groups') { echo 'in active'; } ?>">
@@ -1423,7 +2094,7 @@ if($current_user->can_see_this('pending.read' , $group)) {
     <?php require_once('assets/includes/preloader.php'); ?>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.min.js"></script>
+	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.js"></script>
 	<script src="<?php echo WEB_LINK; ?>assets/plugins/charts-chartjs/Chart.min.js"></script>  <!-- ChartJS Chart -->	
 	<script>
     $(document).ready(function() {
@@ -1593,6 +2264,103 @@ $('.approve-machine').on('click' , '.reject-report-item' , function() {
 	}
 });
 
+$('.toggle-code').click(function() {
+	$('.custom-summernote').summernote({
+			callbacks : {
+	            onImageUpload: function(image) {
+					sendFile(image[0] , $(this).attr("class").split(' ')[0]);
+				}
+			}
+        });
+	$('.toggle-code').toggleClass('active');
+	$('.untoggle-code').toggleClass('active');
+});
+$('.untoggle-code').click(function() {
+	$('.custom-summernote').summernote('destroy');
+	$('.toggle-code').toggleClass('active');
+	$('.untoggle-code').toggleClass('active');
+});
+
+$('.toggle-code2').click(function() {
+	$('.custom-summernote2').summernote({
+			callbacks : {
+	            onImageUpload: function(image) {
+					sendFile(image[0] , $(this).attr("class").split(' ')[0]);
+				}
+			}
+        });
+	$('.toggle-code2').toggleClass('active');
+	$('.untoggle-code2').toggleClass('active');
+});
+$('.untoggle-code2').click(function() {
+	$('.custom-summernote2').summernote('destroy');
+	$('.toggle-code2').toggleClass('active');
+	$('.untoggle-code2').toggleClass('active');
+});
+
+$('.toggle-code3').click(function() {
+	$('.custom-summernote3').summernote({
+			callbacks : {
+	            onImageUpload: function(image) {
+					sendFile(image[0] , $(this).attr("class").split(' ')[0]);
+				}
+			}
+        });
+	$('.toggle-code3').toggleClass('active');
+	$('.untoggle-code3').toggleClass('active');
+});
+$('.untoggle-code3').click(function() {
+	$('.custom-summernote3').summernote('destroy');
+	$('.toggle-code3').toggleClass('active');
+	$('.untoggle-code3').toggleClass('active');
+});
+
+$('.toggle-code4').click(function() {
+	$('.custom-summernote4').summernote({
+			callbacks : {
+	            onImageUpload: function(image) {
+					sendFile(image[0] , $(this).attr("class").split(' ')[0]);
+				}
+			}
+        });
+	$('.toggle-code4').toggleClass('active');
+	$('.untoggle-code4').toggleClass('active');
+});
+$('.untoggle-code4').click(function() {
+	$('.custom-summernote4').summernote('destroy');
+	$('.toggle-code4').toggleClass('active');
+	$('.untoggle-code4').toggleClass('active');
+});
+
+$('<div id="loading_wrap"><div class="com_loading"><center><img src="<?php echo WEB_LINK; ?>assets/img/loading.gif" /> Loading ...</center></div></div>').appendTo('body');
+function sendFile(image,obj_class) {
+	$("#loading_wrap").fadeIn("fast");
+
+	data = new FormData();
+	data.append("data", 'summernote-inline-uploader');
+	data.append("id", <?php echo $current_user->id; ?>);
+	data.append("hash", '<?php echo $random_hash; ?>');
+	data.append("img", image);
+	$.ajax({
+		data: data,
+		type: "POST",
+		url: "<?php echo WEB_LINK ?>assets/includes/one_ajax.php?type=upl_img",
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function(url) {
+			$("." + obj_class).summernote("insertImage", url);
+			$("#loading_wrap").fadeOut("fast");
+		},
+		error: function(data) {
+			console.log(data);
+		}
+	});
+}
+
+
+
+
 	$(function () {
 	  $('[data-toggle="tooltip"]').tooltip()
 	})
@@ -1613,12 +2381,6 @@ $('.approve-machine').on('click' , '.reject-report-item' , function() {
 		readURL(this, 'img1');
 	});
 
-	var options = {
-			onKeyUp: function (evt) {
-				$(evt.target).pwstrength("outputErrorList");
-			}
-		};
-		$('#password').pwstrength(options);
 	
 	</script>
 	

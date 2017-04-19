@@ -6330,7 +6330,8 @@
         $video = $('<iframe>')
             .attr('frameborder', 0)
             .attr('src', '//www.youtube.com/embed/' + youtubeId)
-            .attr('width', '640').attr('height', '360');
+            .attr('width', '100%').attr('height', '360')
+            .attr('allowfullscreen', 'true');
       } else if (igMatch && igMatch[0].length) {
         $video = $('<iframe>')
             .attr('frameborder', 0)
@@ -6369,9 +6370,15 @@
         return false;
       }
 
-      $video.addClass('note-video-clip');
+      //$video.addClass('note-video-clip');
+      //return $video[0];
+	   var $embed;
+		var $embed = $('<div>').addClass('embed-responsive').addClass('embed-responsive-16by9');
 
-      return $video[0];
+		$video.addClass('embed-responsive-item');
+		$video.appendTo($embed);
+
+		return $embed[0];
     };
 
     this.show = function () {

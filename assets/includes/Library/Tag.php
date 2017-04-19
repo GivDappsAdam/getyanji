@@ -4,11 +4,13 @@ require_once("Loader.php");
 class Tag Extends OneClass {
 	
 	public static $table_name = "tags";
-	public static $db_fields = array( "id" , "name" , "follows" , "used", "deleted");
+	public static $db_fields = array( "id" , "name" , "follows" , "description" , "avatar" , "used", "deleted");
 	
 	public $id;
 	public $name;
 	public $follows;
+	public $description;
+	public $avatar;
 	public $used;
 	public $deleted;
 	

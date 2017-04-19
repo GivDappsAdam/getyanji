@@ -33,7 +33,7 @@ x.html(repls.replace(new RegExp(tempStrSmiley2, 'g'), rstr));
 	$.fn.emotions.defaults = {
 		a : PATH+"assets/plugins/Emoji/emotions/",			// Emotions folder
 		b : new Array("sick","angel","colonthree","confused","confused","cry","devil","frown","gasp","glasses","grin","grumpy","heart","kiki","kiss","pacman","smile","unsure","sunglasses","tongue","upset","wink"),			// Emotions Type
-		s : new Array(":S","o:)",":3","o.O","O.o",":'(","3:)",":(",":O","8)",":D",":|","<3","^_^",":*","(y)",":)","-_-","8|",":P",">:O",";)"),
+		s : new Array(":S","o:)",":3","o.O","O.o",":'(","3:)",":(",":O","8|",":D",":|","<3","^_^",":*","(y)",":)","-_-","8)",":P",">:O",";)"),
 		c : "gif"					// Emotions Image format
 	};
 })(jQuery);

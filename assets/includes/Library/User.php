@@ -4,11 +4,12 @@ require_once("Loader.php");
 class User Extends OneClass {
 	
 	public static $table_name = "users";
-	public static $db_fields = array( "id" , "f_name" , "l_name" , "prvlg_group", "password",  "email", "mobile" , "address", "comment" , "about" , "follows" , "avatar" ,"points","joined", "disabled","deleted" , "hybridauth_provider_name" , "hybridauth_provider_uid" );
+	public static $db_fields = array( "id" , "f_name" , "l_name" , "prvlg_group", "password",  "email", "username" , "mobile" , "address", "comment" , "about" , "follows" , "avatar" ,"points","joined", "disabled","deleted" , "hybridauth_provider_name" , "hybridauth_provider_uid" );
 	
 	public $id;
 	public $f_name;
 	public $l_name;
+	public $username;
 	public $comment;
 	public $about;
 	public $follows;
@@ -28,6 +29,11 @@ class User Extends OneClass {
 	
 	
 	
+	public static function find_username($needle="" , $id=0 , $string="") {
+	global $db;
+	return static::preform_sql("SELECT * FROM " .  DBTP. self::$table_name  ." WHERE username LIKE '{$needle}%' AND id != '{$id}' " . $string . " " );
+	}
+
 	public static function hash_authenticate($username="") {
 	global $db;
 	$username = $db->escape_value($username);

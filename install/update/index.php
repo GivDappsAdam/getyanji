@@ -12,7 +12,7 @@ if(isset($_SESSION[$rand]) && $_SESSION[$rand] != "") {
 	$_SESSION[$rand] = $random_hash;
 }
 
-$new_version = '1.4';
+$new_version = '1.5';
 $changelog = "";
 
 //Sandbox!
@@ -44,13 +44,14 @@ if(isset($_POST['submit'])) {
 			fwrite($dbfile, $new_file);
 			fclose($dbfile);
 			
-			mysql_connect(DBH,DBU,DBPW);
-			mysql_select_db(DBN);
+			$con= mysqli_connect(DBH,DBU,DBPW);
+			mysqli_select_db($con,DBN);
 			
-			$split = UpdateSQL('pearls.sql' , ';');
+			$split = UpdateSQL('pearls.sql' , ';',$con);
 			if($split != 'finished') {
 				$step_errors[] = $split;
 			}
+			
 		$step = 2;
 	}
 }

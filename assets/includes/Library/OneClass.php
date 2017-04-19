@@ -13,7 +13,7 @@ class OneClass {
 	public static function count_everything($query="" , $string="") {
 	global $db;
 	$result = $db->query("SELECT COUNT(id) FROM " .  DBTP. static::$table_name  . " WHERE id !=0 " . $query . " " .  $string );
-	return mysql_result($result, 0);
+	return mysqli_result($result, 0);
 	}
 	
 	public static function get_arranged() {

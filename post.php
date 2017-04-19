@@ -98,6 +98,7 @@ if (isset($_GET['data']) && $_GET['data'] != '' && isset($_GET['type']) && $_GET
 
 if(isset($_POST['add_q'])) {
 	if($_POST['hash'] == $_SESSION[$elhash]){
+		unset($_SESSION[$elhash]);
 		
 		if(!$current_user->can_see_this("questions.create",$group) ) {
 			$msg = $lang['alert-restricted'];
@@ -131,6 +132,7 @@ if(isset($_POST['add_q'])) {
 			$tagsid = array();
 			foreach($tags as $k => $v) {
 				$v = profanity_filter($v);
+				$v = str_replace('?' , '' , $v);
 				$actualtag = Tag::find_exact($v , 'name' , 'LIMIT 1');
 				if($actualtag) {
 					$actualtag = $actualtag[0];
@@ -144,7 +146,7 @@ if(isset($_POST['add_q'])) {
 						$t->name = $v;
 						$t->used = 1;
 						$t->create();
-						$t_id= mysql_insert_id();
+						$t_id= $t->id;
 						$tagsid[] = $t_id;
 						//$tags[] = $v;
 					}
@@ -191,7 +193,7 @@ if(isset($_POST['add_q'])) {
 						$msg = $notif_msg . "<br>Check it out at " . $notif_link;
 						$title = 'New Post';
 						$receiver = User::get_specific_id($notif_user);
-						if($receiver && is_object($receiver)) {
+						if($receiver && is_object($receiver) && $notif_user != $current_user->id ) {
 							Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
 						}
 					}
@@ -214,7 +216,7 @@ if(isset($_POST['add_q'])) {
 									$msg = $notif_msg . "<br>Check it out at " . $notif_link;
 									$title = 'New Post';
 									$receiver = User::get_specific_id($notif_user);
-									if($receiver && is_object($receiver)) {
+									if($receiver && is_object($receiver) && $notif_user != $current_user->id ) {
 										Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
 									}
 								}
@@ -297,7 +299,9 @@ if(isset($_POST['update_q'])) {
 			
 			
 			$tags = explode(',',$_POST['tags']);
+			$newtags = array();
 			foreach($tags as $k => $v) {
+				$v = str_replace('?' , '' , $v);
 				$tag = Tag::get_tag($v);
 				if($tag) {
 					$tag->used += 1;
@@ -308,21 +312,21 @@ if(isset($_POST['update_q'])) {
 						$t->name = profanity_filter($v);
 						$t->used = 1;
 						$t->create();
-						$t_id= mysql_insert_id();
-						$tags[] = profanity_filter($v);
+						$t_id= $t->id;
+						//$tags[] = profanity_filter($v);
 					}
 				}
+				$newtags[] = $v;
 			}
-			
 			
 			$content = profanity_filter($_POST['content']);
 			$published = false;
 			
-			$q->user_id = $current_user->id;
+			//$q->user_id = $current_user->id;
 			$q->title = $title;
 			$q->slug = $slug;
 			$q->updated_at = strftime("%Y-%m-%d %H:%M:%S" , time());
-			$q->feed = implode(',' , $tags);
+			$q->feed = implode(',' , $newtags);
 			$q->content = $content;
 			
 			if(isset($_POST['anonymous']) && $_POST['anonymous'] == '1' ) {
@@ -440,7 +444,7 @@ require_once('assets/includes/navbar.php');
 	<?php require_once('assets/includes/footer.php'); ?>
     </div> <!-- /container -->
     <?php require_once('assets/includes/preloader.php'); ?>
-	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.min.js"></script>
+	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.js"></script>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 	<script src="<?php echo WEB_LINK; ?>assets/plugins/tagsinput/bootstrap-tagsinput.js"></script>
@@ -452,10 +456,13 @@ require_once('assets/includes/navbar.php');
 					sendFile(image[0]);
 				}
 			}
-
         });
+		$('<div id="loading_wrap"><div class="com_loading"><center><img src="<?php echo WEB_LINK; ?>assets/img/loading.gif" /> Loading ...</center></div></div>').appendTo('body');
+
         function sendFile(image) {
-            data = new FormData();
+            $("#loading_wrap").fadeIn("fast");
+
+			data = new FormData();
             data.append("data", 'summernote-inline-uploader');
             data.append("id", <?php echo $current_user->id; ?>);
             data.append("hash", '<?php echo $random_hash; ?>');
@@ -469,6 +476,7 @@ require_once('assets/includes/navbar.php');
                 processData: false,
                 success: function(url) {
                     $('#summernote').summernote("insertImage", url);
+					$("#loading_wrap").fadeOut("fast");
 				},
 				error: function(data) {
 					console.log(data);
@@ -490,12 +498,15 @@ require_once('assets/includes/navbar.php');
 $('input#tagsinput').tagsinput({
 maxTags: 8,
 maxChars: 30,
+trimValue: true,
+
 typeaheadjs: {
 	
 	name: 'tags',
 	displayKey: 'tag',
     valueKey: 'tag',
-
+    afterSelect: function(val) { this.$element.val(""); },
+	
 	source: function (query, process) {
 		$.ajax({
 			url: '<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=tags_suggestions',
@@ -512,6 +523,11 @@ typeaheadjs: {
 		});
 	}
 }
+});
+
+$('.bootstrap-tagsinput input').blur(function() {
+$('input#tagsinput').tagsinput('add', $(this).val());
+$(this).val('');
 });
   </script>
 <?php require_once('assets/includes/bottom.php'); ?>

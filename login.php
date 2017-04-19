@@ -5,24 +5,7 @@ if ($session->is_logged_in() == true ) { redirect_to($url_mapper['index/']); }
 if(!isset($settings['site_lang'])) { $settings['site_lang'] = 'English'; }
 require_once($current."/lang/lang.{$settings['site_lang']}.php");
 
-/*if( isset( $_GET["lang"] ) && $_GET['lang'] != '' ){
-	switch($_GET['lang']) {
-		case 'ar' :
-			$new_settings = unserialize(str_replace('\\' , '' , $general_settings->value));
-			$new_settings['site_lang'] = 'Arabic';
-			$general_settings->value = serialize($new_settings);
-			$general_settings->update();
-			redirect_to($url_mapper['login/']);
-		break;
-		case 'en' :
-			$new_settings = unserialize(str_replace('\\' , '' , $general_settings->value));
-			$new_settings['site_lang'] = 'English';
-			$general_settings->value = serialize($new_settings);
-			$general_settings->update();
-			redirect_to($url_mapper['login/']);
-		break;
-	}
-}*/
+
 
 // else, if login page request by clicking a provider button
 if( isset( $_GET["provider"] ) ){
@@ -177,6 +160,7 @@ if(isset($_POST['register-account'])) {
 				$f_name = $db->escape_value($_POST['first_name']);
 				$l_name = $db->escape_value($_POST['last_name']);
 				$email = $db->escape_value($_POST['reg-email']);
+				$username = $db->escape_value(trim(str_replace(' ','',$_POST['reg-username'])));
 				$password = $db->escape_value($_POST['reg-password']);
 				
 				$terms = $db->escape_value($_POST['terms']);
@@ -199,6 +183,15 @@ if(isset($_POST['register-account'])) {
 				}
 				
 				$acc->email = $email;
+				
+				$username_exists = User::check_existance("username", $username);
+				
+				if($username_exists) {
+					$msg = $lang['alert-username_exists'];
+					redirect_to($url_mapper['login/']."edit=fail&msg={$msg}");
+				}
+				
+				$acc->username = $username;
 				
 				$phpass = new PasswordHash(8, true);
 				$hashedpassword = $phpass->HashPassword($password);
@@ -386,9 +379,8 @@ if(isset($_SESSION[$elhash_login]) && $_SESSION[$elhash_login] != "") {
 						<?php } ?>
 						<div class="col-md-6 horizontal-separator">
 							<div id="social-login">
-								<a href="<?php echo $url_mapper['login/']; ?>&provider=facebook" class="btn btn-primary btn-lg btn-block"><?php echo $lang['login-using_facebook']; ?></a>
-								<?php //if($settings['public_access'] == '1' ) {<a href="$url_mapper['index/'];" class="btn btn-danger btn-lg btn-block">Login as Guest</a><?php } ?>
-								<a href="<?php echo $url_mapper['login/']; ?>&provider=google" class="btn btn-danger btn-lg btn-block"><?php echo $lang['login-using_google']; ?></a>
+								<?php //if (isset($google_api) && isset($google_api['id']) && $google_api['id'] != ''  ) { ?><a href="<?php echo $url_mapper['login/']; ?>&provider=facebook" class="btn btn-primary btn-lg btn-block"><?php echo $lang['login-using_facebook']; ?></a><?php //} ?>
+								<?php //if (isset($facebook_api) && isset($facebook_api['id']) && $facebook_api['id'] != ''  ) { ?><a href="<?php echo $url_mapper['login/']; ?>&provider=google" class="btn btn-danger btn-lg btn-block"><?php echo $lang['login-using_google']; ?></a><?php //} ?>
 								<br>
 								
 								<?php echo $lang['login-register']; if($settings['public_access'] == '1' ) { echo '<br>' . $lang['login-as_guest']; } ?>
@@ -419,6 +411,16 @@ if(isset($_SESSION[$elhash_login]) && $_SESSION[$elhash_login] != "") {
 									</div>
 									
 									<div class="col-md-12">
+										<div class="form-group">
+											<label for="username" class="control-label"><?php echo $lang['admin-users-username']; ?></label>				  
+											<div class="input-group">
+											  <span class="input-group-addon" id="basic-addon1">@</span>
+											  <input type="text" class="form-control " id="reg-username" name="reg-username" placeholder="English, No Spaces allowed" value=""  required >
+											</div>
+										</div>
+									</div>
+									
+									<div class="col-md-12">
 									<div class="form-group">
 										<label for="reg-password" class="control-label"><?php echo $lang['login-register-pass']; ?></label>
 										<input type="password" class="form-control " id="reg-password" name="reg-password" placeholder="" value="" required>
@@ -440,10 +442,8 @@ if(isset($_SESSION[$elhash_login]) && $_SESSION[$elhash_login] != "") {
 						</div>
 						<div class="col-md-6 ">
 							<div id="login-block">
-							<div class="alert alert-success hide">
-								<i class="glyphicon glyphicon-check"></i> <strong>New!</strong>&nbsp;&nbsp;Now script supports both <a href="<?php echo $url_mapper['login/']; ?>&lang=ar">Arabic</a> and <a href="<?php echo $url_mapper['login/']; ?>&lang=en">English</a> versions!
-							</div>
-								<form method="POST" action="<?php echo $url_mapper['login/']; ?>" >
+							
+							<form method="POST" action="<?php echo $url_mapper['login/']; ?>" >
 									<div class="form-group">
 										<label for="email" class="control-label"><?php echo $lang['login-register-email']; ?></label>
 										<input type="email" class="form-control " id="email" name="email" placeholder="" value="" required>

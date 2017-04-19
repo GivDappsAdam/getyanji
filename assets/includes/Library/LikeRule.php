@@ -16,7 +16,7 @@ class LikeRule Extends OneClass {
 	public static function check_for_obj($obj_type='question' , $type = "like", $id , $user_id) {
 		global $db;
 		$result_array =  $db->query("SELECT id FROM " . DBTP . self::$table_name . " WHERE type = '{$type}' AND obj_id = " . $id . " AND obj_type = '{$obj_type}' AND user_id = {$user_id} LIMIT 1");
-		return mysql_num_rows($result_array) ? true : false;
+		return mysqli_num_rows($result_array) ? true : false;
 	}
 	
 	public static function get_for_obj($obj_type='question'  , $type = "like", $id , $user_id) {

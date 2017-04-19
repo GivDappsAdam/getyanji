@@ -1,4 +1,6 @@
-<?php require_once('assets/includes/route.php'); ?>
+<?php require_once("assets/includes/Library/Loader.php");
+if(!isset($settings['site_lang'])) { $settings['site_lang'] = 'English'; }
+require_once($current."/lang/lang.{$settings['site_lang']}.php"); ?>
 <?php $title="404 Page Not Found"; require_once('assets/includes/header.php'); ?>
 <?php require_once('assets/includes/navbar.php'); ?>
 

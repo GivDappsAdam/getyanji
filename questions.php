@@ -193,7 +193,8 @@ if (isset($_GET['id']) && $_GET['id'] != '' && isset($_GET['type']) && $_GET['ty
 require_once('assets/includes/header.php');
 if(isset($_POST['add_a'])) {
 	if($_POST['hash'] == $_SESSION[$elhash]){
-			
+		unset($_SESSION[$elhash]);
+		
 			if(!$current_user->can_see_this("answers.create",$group)) {
 				$msg = $lang['alert-restricted'];
 				if(URLTYPE == 'slug') {$url_type = $q->slug;} else {$url_type = $q->id;}
@@ -213,6 +214,42 @@ if(isset($_POST['add_a'])) {
 					$answer->content = $content;
 					if($answer->update()) {
 						$msg = $lang['questions-answer-update_success'];
+						
+					//Mentions
+					preg_match_all('/(^|\s|&nbsp;)(@\w+)/', strip_tags($content), $mentions);
+					$mention_results = array_unique($mentions[0]);
+
+					if(isset($mention_results) && is_array($mention_results)) {
+						
+						foreach($mention_results as $r) {
+							
+							$new_r = trim(str_replace('@','',$r));
+							$new_r = trim(str_replace('&nbsp;','',$new_r));
+							
+							$usrs = User::find($new_r , 'username' , ' LIMIT 1');
+							if($usrs) {
+								foreach($usrs as $u) {
+							
+									if($u && $u->id != 0 && $u->id != $current_user->id) {
+										$str = $lang['notif-a_mention']; $str = str_replace("[NAME]" , $current_user->f_name, $str); $str = str_replace("[TITLE]" , $q->title , $str);
+										$mention_notif_msg = $str;
+										$notif_user = $u[0]->id;
+										$notif = Notif::send_notification($notif_user,$mention_notif_msg,$notif_link);
+										##########
+										## MAILER ##
+										##########
+										$msg = $mention_notif_msg . "<br>" . $notif_link;
+										$title = 'New Mention For You';
+										$receiver = User::get_specific_id($notif_user);
+										if($receiver && is_object($receiver)) {
+											Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
+										}
+									}
+								}
+							}
+						}
+					}
+						
 						if(URLTYPE == 'slug') {$url_type = $q->slug;} else {$url_type = $q->id;}
 						redirect_to($url_mapper['questions/view'] . "{$url_type}&edit=success&msg={$msg}");
 					} else {
@@ -244,9 +281,47 @@ if(isset($_POST['add_a'])) {
 					$str = $lang['notif-a_publish-follow']; $str = str_replace("[NAME]" , $current_user->f_name, $str); $str = str_replace("[TITLE]" , $q->title , $str);
 					$notif_msg = $str;
 					
+					//Mentions
+					preg_match_all('/(^|\s|&nbsp;)(@\w+)/', strip_tags($content), $mentions);
+					$mention_results = array_unique($mentions[0]);
+					
+					print_r($mention_results);
+				
+					if(isset($mention_results) && is_array($mention_results)) {
+						
+						foreach($mention_results as $r) {
+							
+							$new_r = trim(str_replace('@','',$r));
+							$new_r = trim(str_replace('&nbsp;','',$new_r));
+							
+							$usrs = User::find($new_r , 'username' , ' LIMIT 1');
+							if($usrs) {
+								foreach($usrs as $u) {
+									
+									if($u && $u->id != 0 && $u->id != $current_user->id) {
+										$str = $lang['notif-a_mention']; $str = str_replace("[NAME]" , $current_user->f_name, $str); $str = str_replace("[TITLE]" , $q->title , $str);
+										$mention_notif_msg = $str;
+										$notif_user = $u->id;
+										$notif = Notif::send_notification($notif_user,$mention_notif_msg,$notif_link);
+										##########
+										## MAILER ##
+										##########
+										$msg = $mention_notif_msg . "<br>" . $notif_link;
+										$title = 'New Mention For You';
+										$receiver = User::get_specific_id($notif_user);
+										if($receiver && is_object($receiver)) {
+											Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
+										}
+									}
+								}
+							}
+						}
+						
+					}
+					
 					//Question owner
 					if($q->user_id != $a->user_id) {
-						$notif_user = $a->user_id;
+						$notif_user = $q->user_id;
 						$notif = Notif::send_notification($notif_user,$notif_msg,$notif_link);
 						##########
 						## MAILER ##
@@ -263,15 +338,17 @@ if(isset($_POST['add_a'])) {
 					if($user_followers) {
 						foreach($user_followers as $uf) {
 							$notif_user = $uf->user_id;
-							$notif = Notif::send_notification($notif_user,$notif_msg,$notif_link);
-							##########
-							## MAILER ##
-							##########
-							$msg = $notif_msg . "<br>Check it out at " . $notif_link;
-							$title = 'New Answer Posted';
-							$receiver = User::get_specific_id($notif_user);
-							if($receiver && is_object($receiver)) {
-								Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
+							if($q->user_id != $uf->user_id && $notif_user != $current_user->id ) {
+								$notif = Notif::send_notification($notif_user,$notif_msg,$notif_link);
+								##########
+								## MAILER ##
+								##########
+								$msg = $notif_msg . "<br>Check it out at " . $notif_link;
+								$title = 'New Answer Posted';
+								$receiver = User::get_specific_id($notif_user);
+								if($receiver && is_object($receiver)) {
+									Mailer::send_mail_to($receiver->email , $receiver->f_name , $msg , $title);
+								}
 							}
 						}
 					}
@@ -518,7 +595,7 @@ if($followed) {
 				
 				<?php } ?>
 				
-				<br><small style="color:#999"><?php if($q->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . ' ' . date_ago($q->updated_at); } else { echo $lang['index-question-created'] . ' ' . date_ago($q->created_at); }?></small>
+				<br><small style="color:#999">@<?php echo $user->username; ?> | <?php if($q->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . ' ' . date_ago($q->updated_at); } else { echo $lang['index-question-created'] . ' ' . date_ago($q->created_at); }?></small>
 				
 				<!-- Go to www.addthis.com/dashboard to customize your tools --> <div class="addthis_inline_share_toolbox"></div>
 				
@@ -537,11 +614,24 @@ if($followed) {
 		</p>
 		
 		<?php 
-		$str = '';
+		
+		$per_page = "10";
+		if (isset($_GET['page']) && is_numeric($_GET['page']) ) {
+				$page= $_GET['page'];
+		} else {
+				$page=1;
+		}
+		
+		$total_count = Answer::count_answers_for($q->id, '');
+		$pagination = new Pagination($page, $per_page, $total_count);		
+		
+		$str = " LIMIT {$per_page} OFFSET {$pagination->offset()} ";
 		if($current_user->id == 1000) {
 			$str = ' LIMIT 1 ';
 		}
-		$answers = Answer::get_answers_for($q->id,$str ); 
+		
+		$answers = Answer::get_answers_for($q->id, $str); 
+		$t = 1 + (($page - 1) * $per_page);
 		if($answers) {
 			foreach($answers as $a) {
 				
@@ -581,7 +671,9 @@ if($followed) {
 
 				
 		?>
-		<hr>
+		
+		<?php if(isset($admanager1->msg) && $admanager1->msg != '' && $admanager1->msg != '&nbsp;' ) { echo '<hr style="margin-bottom:5px">'.str_replace('\\','',$admanager1->msg).'<hr style="margin-top:5px">'; } else { echo '<hr>'; } ?>
+		
 		<div class="question-element" id="answer-<?php echo $a->id; ?>">
 		<div class="publisher">
 			<?php if($a->published == 0) { ?><p class="label label-danger"><i class="fa fa-eye-slash"></i> <?php echo $lang['questions-pending-tag']; ?></p><?php } ?>
@@ -601,7 +693,7 @@ if($followed) {
 				?>
 				&nbsp;&nbsp;<a href="#me" class="btn btn-sm btn-default <?php echo $u_follow_class; ?>" name="<?php echo $user->id; ?>" value="<?php echo $user->follows; ?>" data-obj="User" data-lbl="<?php echo $lang['btn-follow']; ?>" data-lbl-active="<?php echo $lang['btn-followed']; ?>" ><i class="fa fa-user-plus"></i> <?php echo $follow_txt; ?> | <?php echo $user->follows; ?></a>
 				<?php } ?>
-				<br><small><?php if($a->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . ' ' . date_ago($a->updated_at); } else { echo $lang['index-question-created'] . ' ' . date_ago($a->created_at); }?></small>
+				<br><small>@<?php echo $user->username; ?> | <?php if($a->updated_at != "0000-00-00 00:00:00") { echo $lang['index-question-updated'] . ' ' . date_ago($a->updated_at); } else { echo $lang['index-question-created'] . ' ' . date_ago($a->created_at); }?></small>
 			</p>
 		</div><br>
 		<p class="question-content">
@@ -733,7 +825,50 @@ if($followed) {
 		
 		</div>
 		<?php 
-		}}}
+		}$t++; }
+		
+		if(isset($pagination) && $pagination->total_pages() > 1) {
+		?>
+		<div class="pagination btn-group">
+		
+				<?php
+				if ($pagination->has_previous_page()) {
+					$page_param = $url_mapper['questions/view'].$url_type.'&page=';
+					$page_param .= $pagination->previous_page();
+
+				echo "<a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-left']}\"></i></a>";
+				} else {
+				?>
+				<a class="btn btn-default" type="button"><i class="glyphicon glyphicon-chevron-<?php echo $lang['direction-left']; ?>"></i></a>
+				<?php
+				}
+				
+				for($p=1; $p <= $pagination->total_pages(); $p++) {
+					if($p == $page) {
+						echo "<a class=\"btn btn-default active\" type=\"button\">{$p}</a>";
+					} else {
+						$page_param = $url_mapper['questions/view'].$url_type.'&page=';
+						$page_param .= $p;
+						echo "<a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\">{$p}</a>";
+					}
+				}
+				if($pagination->has_next_page()) {
+					$page_param = $url_mapper['questions/view'].$url_type.'&page=';
+					$page_param .= $pagination->next_page();
+
+				echo " <a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-right']}\"></i></a> ";
+				} else {
+				?>
+				<a class="btn btn-default" type="button"><i class="glyphicon glyphicon-chevron-<?php echo $lang['direction-right']; ?>"></i></a>
+				<?php
+				}
+				?>
+		
+		</div>
+		<?php
+		}
+		
+		}
 		
 		if($current_user->id == 1000) {
 		?>
@@ -799,7 +934,7 @@ if($followed) {
 			<li><a href="<?php echo $url_mapper['pages/view']; ?>terms" class="col-md-12"><?php echo $lang['pages-terms-title']; ?></a></li>
 			<li><a href="<?php echo $url_mapper['leaderboard/']; ?>" class="col-md-12"><?php echo $lang['pages-leaderboard-title']; ?></a></li>
 		</ul>
-		<br style='clear:both'><br style='clear:both'><br style='clear:both'>
+		<?php if(isset($admanager2->msg) && $admanager2->msg != '' && $admanager2->msg != '&nbsp;' ) { echo "<br style='clear:both'><hr>".str_replace('\\','',$admanager2->msg)."<hr><br style='clear:both'>"; } else { echo "<br style='clear:both'><br style='clear:both'><br style='clear:both'>";} ?>
 		<i class="glyphicon glyphicon-warning-sign"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-related_questions']; ?>
 		<hr>
 		
@@ -827,6 +962,8 @@ if($followed) {
 				}
 			?>
 		</ul>
+		
+		<?php if($current_user->id != '1000') { ?>
 		<br style='clear:both'><br style='clear:both'><br style='clear:both'>
 		<i class="glyphicon glyphicon-question-sign"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-your_questions']; ?>
 		<hr>
@@ -865,7 +1002,7 @@ if($followed) {
 		<hr>
 		<ul class="feed-ul">
 			<?php 
-				$total_count = Answer::count_answers_for($current_user->id," ");
+				$total_count = Answer::count_answers_for_user($current_user->id," ");
 				$answers = Answer::get_answers_for_user($current_user->id ," LIMIT 5 " );
 				
 				if($answers) {
@@ -895,7 +1032,7 @@ if($followed) {
 				}
 			?>
 		</ul>
-		
+		<?php } ?>
 		
 	</div>
 	
@@ -903,7 +1040,7 @@ if($followed) {
 	<?php require_once('assets/includes/footer.php'); ?>
     </div> <!-- /container -->
     <?php require_once('assets/includes/preloader.php'); ?>
-	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.min.js"></script>
+	<script src="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.js"></script>
 	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 	<script>
@@ -914,8 +1051,31 @@ if($followed) {
 	            onImageUpload: function(image) {
 					sendFile(image[0]);
 				}
-			}
-
+			},
+			hint: {
+					mentions: function(keyword, callback) {
+						$.ajax({
+							dataType: 'json',
+							data: {id:<?php echo $current_user->id; ?>, data: keyword , hash:'<?php echo $random_hash; ?>'},
+							type: "POST",
+							url: "<?php echo WEB_LINK ?>assets/includes/one_ajax.php?type=mention",
+							async: true, //This works but freezes the UI
+							success:function(data) {
+							  console.log(data); 
+							}
+						}).done(callback);
+					},
+					match: /\B@(\w*)$/,
+					search: function (keyword, callback) {
+						this.mentions(keyword, callback); //callback must be an array
+					},
+					template: function (item) {
+						return item.name;
+					},
+					content: function (item) {
+						return $('<a href="'+ item.link +'" class="mentionned" target="_blank">@' + item.name + '</a>')[0];
+					}
+			  }
         });
 		
 		function sendFile(image) {
@@ -953,6 +1113,8 @@ if($followed) {
 	$(document).ready(function(){
 		$("img").addClass("img-responsive");
 	});
+		
+	
 	</script>
 	<?php require_once('assets/includes/like-machine.php'); ?>
 	

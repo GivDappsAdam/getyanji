@@ -1,8 +1,16 @@
 <?php require_once('assets/includes/route.php'); 
 if ($session->is_logged_in() != true ) { redirect_to($url_mapper['login/']); }
 
-$current_user = User::get_specific_id($session->admin_id);
-$group = $current_user->prvlg_group;	
+if ($session->is_logged_in() != true ) {
+	if ($settings['public_access'] == '1') {
+		$current_user = User::get_specific_id(1000);
+	} else {
+		redirect_to($url_mapper['login/']); 
+	}
+} else {
+	$current_user = User::get_specific_id($session->admin_id);
+}
+$group = $current_user->prvlg_group;
 
 defined('APPNAME') ? null : define ('APPNAME' , $settings['site_name']);
 defined('APPSLOGAN') ? null : define ('APPSLOGAN' , $settings['site_description']);

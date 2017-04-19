@@ -41,7 +41,7 @@ class Question Extends OneClass {
 		//get feed ...
 		global $db;
 		$result = $db->query("SELECT COUNT(id) FROM " . DBTP . self::$table_name . " WHERE published = 0 {$string} ORDER BY created_at ASC " . $string );
-		return mysql_result($result, 0);
+		return mysqli_result($result, 0);
 	}
 	
 	public static function get_related_questions_for($feed ="",$string = "") {
@@ -211,7 +211,7 @@ class Question Extends OneClass {
 		}
 		
 		$result = $db->query("SELECT COUNT(id) FROM " . DBTP . self::$table_name . " WHERE published = 1 {$str} ORDER BY created_at DESC" . $string);
-		return mysql_result($result, 0);
+		return mysqli_result($result, 0);
 	}
 	
 	public static function get_questions_for($user_id , $string) {
@@ -224,7 +224,7 @@ class Question Extends OneClass {
 		//get feed ...
 		global $db;
 		$result = $db->query("SELECT * FROM " . DBTP . self::$table_name . " WHERE user_id = '" . $user_id . "' ORDER BY created_at DESC" . $string );
-		if(mysql_num_rows($result)) { return mysql_num_rows($result); } else { return '0'; }
+		if(mysqli_num_rows($result)) { return mysqli_num_rows($result); } else { return '0'; }
 	}
 	
 	
@@ -246,7 +246,7 @@ class Question Extends OneClass {
 	public static function get_tagcloud($data) {
 		global $db;
 		$result = $db->query("SELECT GROUP_CONCAT(feed SEPARATOR ',') AS tagcloud FROM questions group by 'all' ");
-		$arr = mysql_result($result, 0);
+		$arr = mysqli_result($result, 0);
 		@$tags = explode(',' , $arr);
 		if(is_array($tags)) {
 			$tags = array_unique($tags); 

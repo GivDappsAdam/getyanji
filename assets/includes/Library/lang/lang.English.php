@@ -1,4 +1,4 @@
-<?php require_once(dirname(__FILE__).'/../../route.php');
+<?php require_once(dirname(__FILE__).'/../Loader.php');
 
 $lang = Array();
 $lang['lang'] = 'en';
@@ -31,6 +31,8 @@ $lang['alert-delete_failed'] = "Unable to delete data, please try again";
 //Buttons
 $lang['btn-register'] = 'Register';
 $lang['btn-add'] = 'Add';
+$lang['btn-edit'] = 'Edit';
+$lang['btn-delete'] = 'Delete';
 $lang['btn-login'] = 'Login';
 $lang['btn-submit'] = 'Submit';
 $lang['btn-update'] = 'Update';
@@ -76,7 +78,7 @@ $lang['index-question-updated'] = 'Updated';
 $lang['index-question-read_more'] = 'More';
 $lang['index-question-answer'] = 'Answer';
 $lang['index-sidebar-welcome'] = 'Welcome';
-$lang['index-sidebar-feeds'] = 'Feeds';
+$lang['index-sidebar-feeds'] = 'Topics';
 $lang['index-sidebar-top'] = 'Newest Stories';
 $lang['index-sidebar-trending'] = 'Trending';
 $lang['index-sidebar-subscriptions'] = 'Subscriptions';
@@ -147,7 +149,7 @@ $lang['login-logged_out'] = 'Logged out Successfully!';
 $lang['login-using_facebook'] = 'Login Using Facebook';
 $lang['login-using_google'] = 'Login Using Google';
 $lang['login-register'] = 'Also, You can <a href="#me" id="register">Register New Account</a>';
-$lang['login-remember'] = 'Remeber Me';
+$lang['login-remember'] = 'Remember Me';
 $lang['login-forgot_pass'] = 'Forgot your password ?';
 $lang['login-as_guest'] = "or <a href='{$url_mapper['index/']}' class=''>Login as Guest</a>";
 $lang['login-privacy'] = 'By signing up you indicate that you have read and agree to the <a href="#privacy_policy" data-toggle="modal">Privacy Policy</a>.';
@@ -163,7 +165,7 @@ $lang['questions-pending-tag'] = " Awaiting Admin Approval";
 $lang['questions-title'] = "Submit Your Question";
 $lang['questions-q_title'] = "Question title";
 $lang['questions-anonymous'] = "Post Anonymously";
-$lang['questions-tags'] = "Classifications (tags)&nbsp;&nbsp;<span style='color:#b0b0b0'>type your tag and press enter</span>";
+$lang['questions-tags'] = "Classifications (topics)&nbsp;&nbsp;<span style='color:#b0b0b0'>type your topic and press enter</span>";
 $lang['questions-details'] = "Question Details";
 $lang['questions-answer-create_success'] = "Your answer was submitted! Thanks for contributing in such interesting discussion";
 $lang['questions-answer-create_failed'] = "Cannot submit your answer! please try again";
@@ -246,3 +248,21 @@ $lang['notif-report-q_reporter-reject'] = "Your report about the question ([TITL
 $lang['notif-report-a_reporter-reject'] = "Your report about answer to the question ([TITLE]) was reviewd and it doesn't violate our <a href='{$url_mapper['pages/view']}terms'>Terms and Conditions</a>, so it won't be removed from website";
 $lang['alert-report_success'] = "Content reported successfully and will be reviewd by admins";
 $lang['alert-report_failed'] = "Content cannot be reported, please try again later";
+
+$lang['btn-go_to_q'] = "Full Conversation";
+$lang['admin-section-topics'] = "Edit Topics";
+$lang['admin-topics-title'] = "Edit Site Topics";
+$lang['admin-topics-name'] = "Topic Name";
+$lang['admin-topics-description'] = "Topic Description";
+$lang['admin-topics-avatar'] = "Avatar";
+
+$lang['admin-section-admanager'] = "Ads Manager";
+$lang['admin-admanager-title'] = "Ads Manager";
+$lang['admin-admanager-lt_sidebar'] = "Left Sidebar";
+$lang['admin-admanager-rt_sidebar'] = "Right Sidebar";
+$lang['admin-admanager-between_q'] = "Between Questions";
+$lang['admin-admanager-between_a'] = "Between Answers";
+
+$lang['notif-a_mention'] = "([NAME]) Has mentioned you in ([TITLE]) question, Click here and join the discussion!";
+$lang['admin-users-username'] = "Username";
+$lang['alert-username_exists'] = 'Username already exists in database! please try again';
