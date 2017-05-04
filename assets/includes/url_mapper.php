@@ -3,13 +3,13 @@
 $url_mapper = array();
 $url_mapper['error/404/'] = WEB_LINK.'error/404/';
 $url_mapper['login/'] = WEB_LINK.'login.php';
-$url_mapper['logout/'] = WEB_LINK.'logout/';
-$url_mapper['index/'] = WEB_LINK.'index/';
+$url_mapper['logout/'] = WEB_LINK.'logout.php';
+$url_mapper['index/'] = WEB_LINK;
 $url_mapper['feed/'] = WEB_LINK.'feed/';
 $url_mapper['search/'] = WEB_LINK.'search/';
 $url_mapper['notifications/'] = WEB_LINK.'notifications/';
 $url_mapper['leaderboard/'] = WEB_LINK.'leaderboard/';
-$url_mapper['admin/'] = WEB_LINK.'admin/';
+$url_mapper['admin/'] = WEB_LINK.'admin.php';
 
 $url_mapper['questions/create'] = WEB_LINK. 'post/create/';
 $url_mapper['questions/update'] = WEB_LINK. 'post/update/';

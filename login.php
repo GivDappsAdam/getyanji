@@ -33,7 +33,7 @@ if( isset( $_GET["provider"] ) ){
 	catch( Exception $e ) {
 		
 		switch( $e->getCode() ){
-		  case 0 : $msg= "Unspecified error."; break;
+		  case 0 : $msg= "Unspecifeeied error."; break;
 		  case 1 : $msg= "Hybriauth configuration error."; break;
 		  case 2 : $msg= "Provider not properly configured."; break;
 		  case 3 : $msg= "Unknown or disabled provider."; break;
