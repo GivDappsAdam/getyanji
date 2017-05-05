@@ -1,5 +1,5 @@
 <br><br><div class="master-footer">
-	<a href="http://michael-designs.com" target="_blank">Michael Designs </a>&copy; 2017
+	<a href="www.getyanji.com" target="_blank">Yanji </a>&copy; 2017
 </div>	
 <?php if(isset($analytics_info) && is_array($analytics_info) ) { ?>
 <script>
