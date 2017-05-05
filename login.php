@@ -120,7 +120,7 @@ if(isset($_POST['forgotpassword'])) {
 				##########
 				## MAILER ##
 				##########
-				$msg = "You've requested to reset your password on " . APPNAME ." (".WEB_LINK . ")<br>";
+				$msg = "You've requested to reset your password on Yanji " . APPNAME ." (".WEB_LINK . ")<br>";
 				$msg .= "Here's a temporary password generated for your account, please login and reset your password to ensure safety of your information<br>";
 				$msg .= "Your new password is:<br><pre>{$password}</pre>";
 				$title = 'Password Reset';
