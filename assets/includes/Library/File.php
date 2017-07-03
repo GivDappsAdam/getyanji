@@ -114,7 +114,7 @@ Class File {
 	public function image_path() {
 		return $this->upload_dir."/".$this->filename;
 	}
-	public function save() {
+	public function save($crop = false) {
 	
 			//check for errors first ..
 			if(!empty($this->errors)) {
@@ -129,15 +129,27 @@ Class File {
 			
 			if($this->type == 'image/jpeg') {
 				$img = imagecreatefromjpeg ($this->temp_path);
+				if($crop) {
+					$img = imagecrop($img, $crop);
+				}
 				$test = imagejpeg ($img, $target_path, 100);
 			} elseif($this->type == 'image/png') {
 				$img = imagecreatefrompng ($this->temp_path);
+				if($crop) {
+					$img = imagecrop($img, $crop);
+				}
 				$test = imagepng ($img, $target_path);
 			} elseif($this->type == 'image/gif') {
 				$img = imagecreatefromgif ($this->temp_path);
+				if($crop) {
+					$img = imagecrop($img, $crop);
+				}
 				$test = imagegif ($img, $target_path);
 			} elseif($this->type == 'image/bmp') {
 				$img = imagecreatefromwbmp ($this->temp_path);
+				if($crop) {
+					$img = imagecrop($img, $crop);
+				}
 				$test = imagewbmp ($img, $target_path);
 			} else {
 				$this->errors[] = "The file upload failed, Cannot read image details";

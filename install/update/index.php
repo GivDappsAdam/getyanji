@@ -12,7 +12,7 @@ if(isset($_SESSION[$rand]) && $_SESSION[$rand] != "") {
 	$_SESSION[$rand] = $random_hash;
 }
 
-$new_version = '1.5';
+$new_version = '1.7';
 $changelog = "";
 
 //Sandbox!

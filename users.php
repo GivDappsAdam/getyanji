@@ -190,6 +190,8 @@ if (isset($_POST['edit_user'])) {
 				$images = array();
 				$num_pics = 1;
 				$target = $_FILES['upload_files'];
+				$crop_arr = $_POST['cropped'];
+				$crop = json_decode($crop_arr , true);
 				$upload_problems = 0;
 				for ($f ; $f < $num_pics ; $f++) :
 					$file = "file";
@@ -197,7 +199,7 @@ if (isset($_POST['edit_user'])) {
 					$$string = new File();	
 						if(!empty($_FILES['upload_files']['name'][$f])) {
 							$$string->attach_file($_FILES['upload_files'], $f);
-							if ($$string->save()) {
+							if ($$string->save($crop)) {
 								$images[$f] = $$string->id;
 							} else {
 								$upl_msg = $lang['alert-upload_error'];
@@ -517,7 +519,7 @@ require_once('assets/includes/navbar.php');
 			} else {
 					$page=1;
 			}
-		
+			
 			$total_count = FollowRule::count_subscriptions('user',$user->id , 'obj_id');
 			$pagination = new Pagination($page, $per_page, $total_count);
 			$following = FollowRule::get_subscriptions('user',$user->id , 'obj_id' , " LIMIT {$per_page} OFFSET {$pagination->offset()} " );
@@ -581,7 +583,7 @@ require_once('assets/includes/navbar.php');
 			
 			if($following) {
 				foreach($following as $f) {
-					$u = User::get_specific_id($f->user_id);
+					$u = User::get_specific_id($f->obj_id);
 					if($u->avatar) {
 						$img = File::get_specific_id($u->avatar);
 						$quser_avatar = WEB_LINK."assets/".$img->image_path();
@@ -652,6 +654,21 @@ require_once('assets/includes/navbar.php');
 								<input type="text" class="form-control" name="address" id="address" placeholder="Address.." value="<?php echo $user->address; ?>">
 								<br>
 								
+								
+								<label class="control-label" for="img1_upl"><?php echo $lang['admin-users-avatar']; ?></label>
+								<div class="controls">
+									
+									<div><img src="<?php echo $quser_avatar; ?>" class="" style="float:<?php echo $lang['direction-left']; ?>; padding:5px; margin-<?php echo $lang['direction-right']; ?>:10px; max-width:100%; height:350px" id="img1"></div>
+									
+									<br style='clear:both'>
+									<div style="height:64px; padding-top: 12px;width:200px;float:<?php echo $lang['direction-left']; ?>">
+										<input class="text-input " type="file" name="upload_files[]" id="img1_upl"/><br/>
+									</div>
+								
+								</div>
+								
+								
+								
 								</div>
 							<hr>
 								
@@ -667,17 +684,8 @@ require_once('assets/includes/navbar.php');
 								<br>
 								
 								
-								<label class="control-label" for="img1_upl"><?php echo $lang['admin-users-avatar']; ?></label>
-								<div class="controls">
-									
-									<img src="<?php echo $quser_avatar; ?>" class="img-polaroid img-circle" style="float:<?php echo $lang['direction-left']; ?>; padding:5px; margin-<?php echo $lang['direction-right']; ?>:10px; width:64px; height:64px" id="img1">
-									<div style="height:64px; padding-top: 12px;width:200px;float:<?php echo $lang['direction-left']; ?>">
-										<input class="text-input " type="file" name="upload_files[]" id="img1_upl"/><br/>
-									</div>
 								
-								</div>
-								
-				<br><br><br><br><br>
+				<br>
 				
 					<label for="username" class="control-label"><?php echo $lang['admin-users-username']; ?></label>
 				  <div class="input-group">
@@ -713,6 +721,7 @@ require_once('assets/includes/navbar.php');
 						
 					<?php 
 						$_SESSION[$elhash] = $random_hash;
+						echo "<input type=\"hidden\" name=\"cropped\" id=\"cropped\" value=\"\" readonly/>";
 						echo "<input type=\"hidden\" name=\"edit_id\" value=\"".$user->id."\" readonly/>";
 						echo "<input type=\"hidden\" name=\"hash\" value=\"".$random_hash."\" readonly/>";
 					?>
@@ -911,11 +920,20 @@ require_once('assets/includes/navbar.php');
 	function readURL(input,targetid) {
 		if (input.files && input.files[0]) {
 			var reader = new FileReader();
-
 			reader.onload = function (e) {
 				$("#" + targetid).attr('src', e.target.result);
+				
+				$("#" + targetid).cropper('destroy');
+				
+				$("#" + targetid).cropper({
+				  minContainerHeight: 400,
+				  aspectRatio: 1/1,
+				  crop: function(e) {
+					var croppedData = '{"x":"'+ e.x +'","y":"'+ e.y +'","width":"' + e.width + '","height":"' + e.height + '" }';
+					$('#cropped').val(croppedData);
+				  }
+				});
 			}
-
 			reader.readAsDataURL(input.files[0]);
 		}
 	}

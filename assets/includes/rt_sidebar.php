@@ -1,4 +1,40 @@
+<div class="col-md-2 visible-sm visible-xs">
+	<br><br>
+	<i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-feeds']; ?>
+	<hr>
+	<ul class="feed-ul">
+		<?php
+			$current = '';
+			if(!isset($_GET['feed']) || $_GET['feed'] == '' ) {
+				$current = 'current';
+			}
+		?>
+		<li><a href="<?php echo $url_mapper['index/']; ?>" class="<?php echo $current; ?> col-xs-12"><?php echo $lang['index-sidebar-top']; ?></a></li>
+		<li>&nbsp;</li>
+		<center><b><?php echo $lang['index-sidebar-trending']; ?></b></center>
+		<?php $tags = Tag::get_trending(' LIMIT 5 ');
+			if($tags) {
+				foreach($tags as $tag) {
+					$current = '';
+					if(isset($_GET['feed']) && $_GET['feed'] != '' ) {
+						if($_GET['feed'] == $tag->name ) {
+							$current = 'current';
+						}
+					}
+			?>
+				<li><a href="<?php echo $url_mapper['feed/'] . $tag->name; ?>/" class="<?php echo $current; ?> col-xs-12"><?php echo $tag->name; ?></a></li>
+			<?php
+				}
+			}
+		?>
+		
+		</ul>
+		<?php if(isset($admanager2->value) && $admanager2->value != '' && $admanager2->value != '&nbsp;' ) { echo '<br style="clear:both"><hr>'.str_replace('\\','',$admanager2->value); } ?>
+	
+	</div>
+
 <div class="col-md-2 hidden-sm hidden-xs">
+		
 		<i class="glyphicon glyphicon-globe"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-welcome']; ?> <?php echo $current_user->f_name; ?>!
 		<hr>
 		<ul class="feed-ul">
@@ -10,6 +46,11 @@
 		</ul>
 		
 		<?php if(isset($admanager2->msg) && $admanager2->msg != '' && $admanager2->msg != '&nbsp;' ) { echo "<br style='clear:both'><hr>".str_replace('\\','',$admanager2->msg)."<hr><br style='clear:both'>"; } else { echo "<br style='clear:both'><br style='clear:both'><br style='clear:both'>";} ?>
+		
+	
+	
+		
+		
 		
 		<?php if($current_user->id != '1000') { ?>
 		<i class="glyphicon glyphicon-question-sign"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-your_questions']; ?>
@@ -82,3 +123,4 @@
 		<?php } ?>
 		
 	</div>
+

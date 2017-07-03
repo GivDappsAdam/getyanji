@@ -131,7 +131,8 @@ if(isset($_POST['add_q'])) {
 			$tags = explode(',',$_POST['tags']);
 			$tagsid = array();
 			foreach($tags as $k => $v) {
-				$v = profanity_filter($v);
+				//$v = slugify(profanity_filter($v));
+				$v = strip_tags(profanity_filter($v));
 				$v = str_replace('?' , '' , $v);
 				$actualtag = Tag::find_exact($v , 'name' , 'LIMIT 1');
 				if($actualtag) {
@@ -301,6 +302,7 @@ if(isset($_POST['update_q'])) {
 			$tags = explode(',',$_POST['tags']);
 			$newtags = array();
 			foreach($tags as $k => $v) {
+				$v = strip_tags(profanity_filter($v));
 				$v = str_replace('?' , '' , $v);
 				$tag = Tag::get_tag($v);
 				if($tag) {

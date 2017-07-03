@@ -13,6 +13,22 @@ class FollowRule Extends OneClass {
 	public $obj_type;
 	
 	
+	public static function get_chat($user_id = 0) {
+		global $db;
+		$arr = array();
+		$following = static::preform_sql("SELECT obj_id FROM ".DBTP. self::$table_name . " WHERE obj_type = 'User' AND user_id = '{$user_id}' ORDER BY follow_date DESC ");
+		
+		if($following) {
+			foreach($following as $f) {
+				$result_array = static::preform_sql("SELECT user_id FROM " . DBTP . self::$table_name . " WHERE obj_id = '{$user_id}' AND obj_type = 'User' AND user_id = '{$f->obj_id}' LIMIT 1");
+				if($result_array) {
+					$arr[] = $result_array[0]->user_id;
+				}
+			}
+		}
+		return $arr;
+	}
+	
 	public static function check_for_obj($obj_type='question' , $id , $user_id) {
 		global $db;
 		$result_array =  $db->query("SELECT id FROM " . DBTP . self::$table_name . " WHERE obj_id = " . $id . " AND obj_type = '{$obj_type}' AND user_id = {$user_id} LIMIT 1");

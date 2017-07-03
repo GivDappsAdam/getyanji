@@ -4,7 +4,7 @@ require_once("Loader.php");
 class User Extends OneClass {
 	
 	public static $table_name = "users";
-	public static $db_fields = array( "id" , "f_name" , "l_name" , "prvlg_group", "password",  "email", "username" , "mobile" , "address", "comment" , "about" , "follows" , "avatar" ,"points","joined", "disabled","deleted" , "hybridauth_provider_name" , "hybridauth_provider_uid" );
+	public static $db_fields = array( "id" , "f_name" , "l_name" , "prvlg_group", "password",  "email", "username" , "mobile" , "address", "comment" , "about" , "follows" , "avatar" ,"points","joined", "last_seen" , "intro"  ,  "disabled","deleted" , "hybridauth_provider_name" , "hybridauth_provider_uid" );
 	
 	public $id;
 	public $f_name;
@@ -24,6 +24,8 @@ class User Extends OneClass {
 	public $deleted;
 	public $avatar;
 	public $joined;
+	public $last_seen;
+	public $intro;
 	public $hybridauth_provider_name;
 	public $hybridauth_provider_uid;
 	
@@ -93,8 +95,14 @@ class User Extends OneClass {
 	
 	public function award_points($points = 1) {
 		global $db;
-		$this->points += 1;
-		$this->update();
+		$this->points += $points;
+		if ($this->update()) { return true; } else { return false; }
+	}
+	
+	public function set_online() {
+		global $db;
+		$this->last_seen = time();
+		if ($this->update()) { return true; } else { return false; }
 	}
 	
 	public static function get_users_for_group_except($id=0,$query="", $string="") {
@@ -113,6 +121,14 @@ class User Extends OneClass {
 	return self::preform_sql("SELECT * FROM " . DBTP . self::$table_name ." WHERE deleted = 0 " . $query . " ORDER BY f_name ASC " . $string." ");
 	}
 	
+	public static function get_chat($arr=array('')) {
+	global $db;
+	global $current_user;
+	$time = strtotime('-5 Minutes' , time());
+	$id_str = implode(',' , $arr);
+	return self::preform_sql("SELECT * FROM " . DBTP . self::$table_name ." WHERE deleted = 0 AND last_seen >= '{$time}' AND id !='{$current_user->id}' AND id IN ({$id_str}) ORDER BY f_name ASC ");
+	}
+	
 	
 	public static function check_existance_except($column="" , $value="" , $id="") {
 	global $db;
@@ -127,6 +143,22 @@ class User Extends OneClass {
 	$result_array =  $db->query($sql);
 	return $db->num_rows($result_array) ? true : false;
 	}
+	
+	public function get_avatar() {
+		global $db;
+		if($this->avatar) {
+			$img = File::get_specific_id($this->avatar);
+			$dev_avatar = WEB_LINK."assets/".$img->image_path();
+			$dev_avatar_path = UPLOADPATH."/".$img->image_path();
+			if (!file_exists($dev_avatar_path)) {
+				$dev_avatar = WEB_LINK.'assets/img/avatar.png';
+			}
+		} else {
+			$dev_avatar = WEB_LINK.'assets/img/avatar.png';
+		}
+		return $dev_avatar;
+	}
+	
 }
 	
 ?>

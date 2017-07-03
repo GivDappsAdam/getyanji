@@ -267,3 +267,14 @@ $lang['admin-admanager-between_a'] = "اعلانات بين الأجابات";
 $lang['notif-a_mention'] = "([NAME]) قام بذكرك في الموضوع ([TITLE]) , إضغط هنا وإنضم للمحادثة !";
 $lang['admin-users-username'] = "إسم المستخدم";
 $lang['alert-username_exists'] = 'إسم المستخدم موجود بالفعل في قاعدة البيانات .. الرجاء المحاولة مرة اخرى';
+
+$lang['welcome'] = 'أهلاً';
+$lang['welcome-msg'] = "نوّرت موقعنا :) يرجى إختيار الموضوعات والتصنيفات المفضلة لتراها بالموقع";
+
+$lang['index-chat-title'] = "دردشة";
+$lang['index-chat-no_chat'] = "إضغط على آحد المستخدمين لبدء المحادثة";
+$lang['index-chat-no_friends'] = "لا يوجد آي مستخدم متاح للدردشة الآن ، قم بمتابعة متابعينك للتحدث إليهم مباشرة";
+$lang['index-chat-send'] = "إرسال";
+$lang['admin-general-chat-title'] = "- إدارة الدردشة -";
+$lang['admin-general-chat-msg'] = "تفعيل الدردشة (للمستخدمين المتابعين لبعضم البعض)";
+

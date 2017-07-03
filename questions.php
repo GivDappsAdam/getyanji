@@ -923,6 +923,43 @@ if($followed) {
 		</form>
 		<?php } ?>
 	</div>
+
+	<div class="col-md-3 visible-sm visible-xs">
+	<br><br>
+	<i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-feeds']; ?>
+	<hr>
+	<ul class="feed-ul">
+		<?php
+			$current = '';
+			if(!isset($_GET['feed']) || $_GET['feed'] == '' ) {
+				$current = 'current';
+			}
+		?>
+		<li><a href="<?php echo $url_mapper['index/']; ?>" class="<?php echo $current; ?> col-xs-12"><?php echo $lang['index-sidebar-top']; ?></a></li>
+		<li>&nbsp;</li>
+		<center><b><?php echo $lang['index-sidebar-trending']; ?></b></center>
+		<?php $tags = Tag::get_trending(' LIMIT 5 ');
+			if($tags) {
+				foreach($tags as $tag) {
+					$current = '';
+					if(isset($_GET['feed']) && $_GET['feed'] != '' ) {
+						if($_GET['feed'] == $tag->name ) {
+							$current = 'current';
+						}
+					}
+			?>
+				<li><a href="<?php echo $url_mapper['feed/'] . $tag->name; ?>/" class="<?php echo $current; ?> col-xs-12"><?php echo $tag->name; ?></a></li>
+			<?php
+				}
+			}
+		?>
+		
+		</ul>
+		<?php if(isset($admanager2->value) && $admanager2->value != '' && $admanager2->value != '&nbsp;' ) { echo '<br style="clear:both"><hr>'.str_replace('\\','',$admanager2->value); } ?>
+	
+	</div>
+
+	
 	
 	<div class="col-md-3 hidden-sm hidden-xs">
 		<i class="glyphicon glyphicon-globe"></i>&nbsp;&nbsp;<?php echo $lang['index-sidebar-welcome']; ?> <?php echo $current_user->f_name; ?>!
@@ -1034,6 +1071,7 @@ if($followed) {
 		</ul>
 		<?php } ?>
 		
+		
 	</div>
 	
 </div>
@@ -1045,6 +1083,8 @@ if($followed) {
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 	<script>
     $(document).ready(function() {
+		$('<div id="loading_wrap"><div class="com_loading"><center><img src="<?php echo WEB_LINK; ?>assets/img/loading.gif" /> Loading ...</center></div></div>').appendTo('body');
+
         $('.summernote').summernote({
 			height: 150,
 			callbacks : {
@@ -1061,7 +1101,7 @@ if($followed) {
 							url: "<?php echo WEB_LINK ?>assets/includes/one_ajax.php?type=mention",
 							async: true, //This works but freezes the UI
 							success:function(data) {
-							  console.log(data); 
+							  //console.log(data); 
 							}
 						}).done(callback);
 					},
@@ -1079,7 +1119,9 @@ if($followed) {
         });
 		
 		function sendFile(image) {
-            data = new FormData();
+            $("#loading_wrap").fadeIn("fast");
+
+			data = new FormData();
             data.append("data", 'summernote-inline-uploader');
             data.append("id", <?php echo $current_user->id; ?>);
             data.append("hash", '<?php echo $random_hash; ?>');
@@ -1092,7 +1134,8 @@ if($followed) {
                 contentType: false,
                 processData: false,
                 success: function(url) {
-                    $('#summernote').summernote("insertImage", url);
+                    $('.summernote').summernote("insertImage", url);
+					$("#loading_wrap").fadeOut("fast");
 				},
 				error: function(data) {
 					console.log(data);

@@ -353,6 +353,7 @@ if (isset($_POST['update_settings'])) {
 			$a_approval = $db->escape_value($_POST["a_approval"]);
 			$reg_group = $db->escape_value($_POST["reg_group"]);
 			$public_access = $db->escape_value($_POST["public_access"]);
+			$chat_status = $db->escape_value($_POST["chat_status"]);
 			
 			$settings_arr = Array(
 									"site_name" => $site_name,
@@ -368,7 +369,8 @@ if (isset($_POST['update_settings'])) {
 									"public_access" => $public_access
 								);
 			$general_settings->value = serialize($settings_arr);
-			if ($general_settings->update()) {
+			$chat->value = $chat_status;
+			if ($general_settings->update() || $chat->update() ) {
 				$msg = $lang['alert-update_success'];
 				redirect_to("{$url_mapper['admin/']}section=general&edit=success&msg={$msg}");
 			} else {
@@ -748,7 +750,11 @@ if($current_user->can_see_this('pending.read' , $group)) {
 			<?php if($current_user->can_see_this('dashboard.read' , $group)) { ?>
 			<div id="dashboard" class="tab-pane fade in <?php if($section == 'dashboard') { echo 'active'; } ?>">
 			<h3 class="page-header"><?php echo $lang['admin-hello']; ?>, <?php echo $current_user->f_name; ?>!</h3>
-			
+				<div class="alert alert-info" stye="direction: ltr; text-align:left">
+					<strong><i class="fa fa-thumbs-up"></i> Rate Pearls! <3 </strong> If you like my work, please support me by <a href="https://codecanyon.net/item/pearls-questions-and-answers-platform/reviews/19305873" target="_blank">Rating Pearls!</a> on CodeCanyon (y)
+				</div>
+				
+				
 			<p style="font-size:16px"><?php $str = $lang['admin-dashboard-users']; $str = str_replace('[COUNT]' , User::count_everything(' AND id != 1000 AND deleted = 0 ') , $str ); echo $str; ?></p>
 			
 				<canvas id="user-registration"  class="full" height="100"></canvas>
@@ -767,7 +773,10 @@ if($current_user->can_see_this('pending.read' , $group)) {
 				
 				<canvas id="answers"  class="full" height="100"></canvas>
 				
-			
+				<hr>
+				<br style="clear:both">
+				
+				
 			</div>
 			<?php } if($current_user->can_see_this('pages.update' , $group)) { ?>
 			<div id="pages" class="tab-pane fade in <?php if($section == 'pages') { echo 'active'; } ?>">
@@ -941,6 +950,15 @@ if($current_user->can_see_this('pending.read' , $group)) {
 											echo " >{$g->name}</option>";
 										}
 									?>
+								</select><br><br>
+							</div>
+							<br><br>
+							<h4><center><?php echo $lang['admin-general-chat-title']; ?></center></h4><br>
+							<div class="form-group">
+								<label for="chat_status"><?php echo $lang['admin-general-chat-msg']; ?></label>&nbsp;&nbsp;
+								<select id="chat_status" name="chat_status" class="form-control select2" style="width:200px"> 
+									<option value="on" <?php if($chat->value == 'on') { echo ' selected'; } ?> >Enable Chat</option>
+									<option value="off" <?php if($chat->value == 'off') { echo ' selected'; } ?>>Disable Chat</option>
 								</select><br><br>
 							</div>
 							

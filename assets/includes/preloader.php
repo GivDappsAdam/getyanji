@@ -12,8 +12,14 @@
 <script type="text/javascript">var PATH = '<?php echo WEB_LINK; ?>';</script>
 <script src="<?php echo WEB_LINK; ?>assets/plugins/Emoji/jquery.emotions.js"></script>
 <script src="<?php echo WEB_LINK; ?>assets/plugins/quickfit/jquery.quickfit.js"></script>
+<script src="<?php echo WEB_LINK; ?>assets/plugins/cropper/cropper.min.js"></script>
 <script src="<?php echo WEB_LINK; ?>assets/js/jquery.slugit.js"></script>
-
+<script type="text/javascript">var HASH = '<?php echo $random_hash; ?>';</script>
+<?php if($chat->value=='on'  && $current_user->id != '1000' ) { ?>
+<script src="<?php echo WEB_LINK; ?>assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<script src="<?php echo WEB_LINK; ?>assets/plugins/chat/chat.js"></script>
+<script src="<?php echo WEB_LINK; ?>assets/js/jquery.form.min.js"></script>
+<?php } ?>
 <script type="text/javascript">
 		
 		/*$(".searchbox-field").focusin(function() {
@@ -67,6 +73,7 @@ function scrollToId(aid){
     $('html,body').animate({scrollTop: eval(aTag.offset().top - 50)},'slow');
 }
 
+$('.grid').emotions();
 $('.col-md-9').emotions();
 $('.modal-body').emotions();
 
@@ -79,9 +86,66 @@ $('.open_link').click(function() {
 	window.location.href = link;
 });
 
+<?php if($chat->value=='on'  && $current_user->id != '1000') { ?>
+$(".slimscroll2").slimscroll({
+	height: ($(window).height()-105),
+	start: 'bottom',
+	alwaysVisible: false,
+	railVisible: true,
+	size: '7px',
+	scrollTo: "bottom"
+}).css("width", "100%");	
+<?php } ?>
+
 <?php if ($session->is_logged_in() == true ) { ?>
+<?php if($chat->value=='on') { ?>
+
+		$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=chat-names", {id:1, data: 1 , hash:'<?php echo $random_hash; ?>'}, function(response){
+				$('.chat-box').html(response);
+		});
+		
+		$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=chat-heads", {id:1, data: 1 , hash:'<?php echo $random_hash; ?>'}, function(response){
+				$('.chat-heads').html(response);
+		});
+		
+		$(document).on('click', '.open-chat' , function () {
+			var chat_user_id = $(this).data('user_id');
+			$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=open-chat", {id:1, data: chat_user_id , hash:'<?php echo $random_hash; ?>'}, function(response){ $('.chat-receptor').html(response); var scrollTo_val = $('.slimscroll2').prop('scrollHeight') + 'px';
+				$('.slimscroll2').slimScroll({ scrollTo : scrollTo_val }); });
+				$(".box-footer").show();
+				var sidebar = $( ".control-sidebar" );
+				if(sidebar.is(':hidden')) {
+					sidebar.addClass('control-sidebar-open');
+					sidebar.animate({opacity: 'toggle'});
+				}
+		});
+<?php } ?>
+
+
 setInterval(function() {
-		$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=check_notifications", {id: 1 , data: 1,  hash:'<?php echo $random_hash; ?>'}, function(data){
+		
+		<?php if($chat->value=='on' && $current_user->id != '1000' ) { ?>
+		var sidebar = $( ".control-sidebar" );
+		
+		//if(!sidebar.hasClass('control-sidebar-open')) {
+			$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=chat-names", {id:1, data: 1 , hash:'<?php echo $random_hash; ?>'}, function(response){
+					$('.chat-box').html(response);
+			});
+			$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=chat-heads", {id:1, data: 1 , hash:'<?php echo $random_hash; ?>'}, function(response){
+				$('.chat-heads').html(response);
+			});
+		//}
+		if(sidebar.hasClass('control-sidebar-open')) {
+			if(sidebar.find('#chat-receiver').val()) {
+				var chat_user_id = sidebar.find('#chat-receiver').val();
+				$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=open-chat", {id:1, data: chat_user_id , hash:'<?php echo $random_hash; ?>'}, function(response){ $('.chat-receptor').html(response); var scrollTo_val = $('.slimscroll2').prop('scrollHeight') + 'px';
+				$('.slimscroll2').slimScroll({ scrollTo : scrollTo_val }); });
+				$(".box-footer").show();
+			}
+		}
+		<?php } ?>
+		
+			$.post("<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=check_notifications", {id: 1 , data: 1,  hash:'<?php echo $random_hash; ?>'}, function(data){
 			
 			var test = $.parseJSON(data);
 			if(test.count) {
@@ -94,6 +158,6 @@ setInterval(function() {
 				});
 			}
 		});
-}, 4000);
+}, 7500);
 <?php } ?>
 </script>

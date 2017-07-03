@@ -2,6 +2,14 @@
 
 $assets_location = '../';
 $config_file = dirname(dirname(__FILE__)) ."/assets/includes/config.php";
+
+if(!file_exists($config_file)) {
+	$file = fopen($config_file,"w");
+	if(!$file) {
+		die("Error! config.php file not found .. please create an empty file at <pre>/assets/includes/config.php</pre>");
+	}
+}
+
 $rand = "RandomHash!";
 require_once('functions.php');
 
@@ -246,7 +254,7 @@ require_once("url_mapper.php");
 	<i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;Server Requirements
 	<hr>
 	<ul class="feed-ul">
-		<?php if($php_version && $php_version >= 5.4 ) { ?>
+		<?php if($php_version && $php_version >= 5.5 ) { ?>
 		<li style='color:green'><i class='glyphicon glyphicon-ok'></i> PHP Version: <?php echo phpversion(); ?></li>
 		<?php } else { ?>
 		<li style='color:red' ><i class='glyphicon glyphicon-remove'></i> PHP Version: <?php echo phpversion(); ?></li>

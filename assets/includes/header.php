@@ -22,6 +22,7 @@ if(isset($_SESSION[$elhash]) && $_SESSION[$elhash] != "") {
 
 $admanager1 = MiscFunction::get_function("admanager1");
 $admanager2 = MiscFunction::get_function("admanager2");
+$chat = MiscFunction::get_function("chat");
 
 ?>
 <!DOCTYPE html>
@@ -33,12 +34,13 @@ $admanager2 = MiscFunction::get_function("admanager2");
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="<?php echo $title . " | " . APPSLOGAN; ?>">
     <meta name="keywords" content="<?php echo APPKEYWORDS; ?>">
-	<meta name="author" content="Yanji">
+	<meta name="author" content="MichaelDesigns">
     <link rel="icon" href="favicon.ico">
 
     <title><?php echo $title . " | " . APPNAME; ?></title>
 	
 	<meta property="og:title" content="<?php echo $title . " | " . APPNAME; ?>">
+	<meta property="og:description" content="<?php echo $title . " | " . APPSLOGAN; ?>">
 	<meta property="og:type" content="article">
 	<meta property="og:url" content="<?php echo  "http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}"; ?>">
 	
@@ -58,7 +60,9 @@ $admanager2 = MiscFunction::get_function("admanager2");
     <link href="<?php echo WEB_LINK; ?>assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 	<link href="<?php echo WEB_LINK; ?>assets/plugins/summernote/summernote.css" rel="stylesheet">
 	<link href="<?php echo WEB_LINK; ?>assets/plugins/tagsinput/bootstrap-tagsinput.css" rel="stylesheet">
-	<link href="<?php echo WEB_LINK; ?>assets/plugins/typeahead/typeaheadjs.css?v=1.01" rel="stylesheet">
+	<link href="<?php echo WEB_LINK; ?>assets/plugins/typeahead/typeaheadjs.css" rel="stylesheet">
+	<link href="<?php echo WEB_LINK; ?>assets/plugins/cropper/cropper.min.css" rel="stylesheet">
+	<?php if($chat->value=='on' && $current_user->id != '1000' ) { ?><link href="<?php echo WEB_LINK; ?>assets/plugins/chat/chat.css" rel="stylesheet"><?php } ?>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 	<link href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css" rel="stylesheet" >
 	

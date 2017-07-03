@@ -1,5 +1,6 @@
+<?php if($chat->value=='on'  && $current_user->id != '1000' ) {  include_once('chat.php'); } ?>
 <br><br><div class="master-footer">
-	<a href="www.getyanji.com" target="_blank">Yanji </a>&copy; 2017
+	<a href="http://michael-designs.com" target="_blank">Michael Designs </a>&copy; 2017
 </div>	
 <?php if(isset($analytics_info) && is_array($analytics_info) ) { ?>
 <script>

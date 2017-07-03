@@ -120,7 +120,7 @@ if(isset($_POST['forgotpassword'])) {
 				##########
 				## MAILER ##
 				##########
-				$msg = "You've requested to reset your password on Yanji " . APPNAME ." (".WEB_LINK . ")<br>";
+				$msg = "You've requested to reset your password on " . APPNAME ." (".WEB_LINK . ")<br>";
 				$msg .= "Here's a temporary password generated for your account, please login and reset your password to ensure safety of your information<br>";
 				$msg .= "Your new password is:<br><pre>{$password}</pre>";
 				$title = 'Password Reset';
@@ -153,7 +153,8 @@ if(isset($_POST['register-account'])) {
 			redirect_to($url_mapper['login/'].'&edit=fail&msg=' .$msg);
         }
         $response=json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$captcha_info['secret']}&response=".$captcha."&remoteip=".$_SERVER['REMOTE_ADDR']), true);
-        if($response['success'] == false){
+		
+		if($response['success'] == false){
 			$msg = $lang['alert-captcha_error'];
 			redirect_to($url_mapper['login/'].'&edit=fail&msg=' .$msg);
         } else {
@@ -427,7 +428,7 @@ if(isset($_SESSION[$elhash_login]) && $_SESSION[$elhash_login] != "") {
 									</div>
 									</div>
 									<div class="col-md-12" >
-									<center style='float:<?php echo $lang['direction-right']; ?>'><div class="g-recaptcha" data-sitekey="<?php echo $captcha_info['sitekey']; ?>" ></div></center>
+									<div class="g-recaptcha" data-sitekey="<?php echo $captcha_info['sitekey']; ?>" ></div>
 									<input type="checkbox" name="terms" required> <?php echo $lang['login-register-terms']; ?>
 									</div>
 									</div>
@@ -483,7 +484,7 @@ if(isset($_SESSION[$elhash_login]) && $_SESSION[$elhash_login] != "") {
 			
           <div class="mastfoot ">
             <div class="inner">
-              <p>&copy; <a href="www.getyanji.com" style="color:white">Yanji</a>.</p>
+              <p>&copy; <a href="http://michael-designs.com" style="color:white">Michael Designs</a>.</p>
             </div>
           </div>
 

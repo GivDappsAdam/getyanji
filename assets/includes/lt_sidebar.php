@@ -48,5 +48,7 @@
 	</ul>
 	
 	<?php if(isset($admanager2->value) && $admanager2->value != '' && $admanager2->value != '&nbsp;' ) { echo '<br style="clear:both"><hr>'.str_replace('\\','',$admanager2->value); } ?>
+	
+	
 	</div>
 	

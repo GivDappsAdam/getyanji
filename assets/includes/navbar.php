@@ -118,7 +118,11 @@
 			  </ul>
 			</li>
 			<?php } ?>
-			
+			<?php if($chat->value == 'on'  && $current_user->id != '1000' ) { ?>
+			<li class="hidden-sm hidden-xs">
+				<a href="#me" id="toggle-chat" ><i class="fa fa-comments-o"></i></a>
+			</li>
+			<?php } ?>
           </ul>
 		  
 		  <form action="<?php echo $url_mapper['questions/create'] ?>" method="post" role="form" enctype="multipart/form-data">

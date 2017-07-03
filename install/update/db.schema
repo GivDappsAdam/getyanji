@@ -79,3 +79,30 @@ WHERE NOT EXISTS (
 ) LIMIT 1;
 
 ALTER TABLE `[DBTP]users` ADD `username` VARCHAR(99) NOT NULL AFTER `avatar`;
+
+ALTER TABLE `[DBTP]users` ADD `last_seen` VARCHAR(11) NOT NULL AFTER `joined`;
+
+ALTER TABLE `[DBTP]users` ADD `intro` TINYINT(1) NOT NULL AFTER `last_seen`;
+
+UPDATE `[DBTP]users` SET `intro` = '1' WHERE `id` = '1000';
+
+CREATE TABLE `[DBTP]chat` (
+  `id` int(11) NOT NULL,
+  `sender` int(11) NOT NULL,
+  `receiver` int(11) NOT NULL,
+  `msg` varchar(300) NOT NULL,
+  `sent_at` datetime NOT NULL,
+  `viewed` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `[DBTP]chat`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `[DBTP]chat`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+INSERT INTO `[DBTP]functions` (`function`, `value`, `msg`) 
+SELECT * FROM (SELECT 'chat', 'on', '') AS tmp
+WHERE NOT EXISTS (
+    SELECT `function` FROM `[DBTP]functions` WHERE `function` = 'chat'
+) LIMIT 1;

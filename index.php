@@ -1,5 +1,45 @@
 <?php require_once('assets/includes/route.php'); ?>
 <?php $title="Home"; 
+
+if (isset($_POST['update_fav'])) {
+	if($_POST['hash'] == $_SESSION[$elhash]){
+		//unset($_SESSION[$elhash]);
+		$tags = explode(',',$_POST['tags']);
+		foreach($tags as $v) {
+			$v = strip_tags($v);
+			$actualtag = Tag::find_exact($v , 'name' , 'LIMIT 1');
+			if($actualtag) {
+				$like = New FollowRule();
+				$like->user_id = $current_user->id;
+				$like->obj_id = $actualtag[0]->id;
+				$like->obj_type = 'tag';
+				$like->follow_date = strftime("%Y-%m-%d %H:%M:%S", time());
+				$like->create();
+			}
+		}
+
+		$current_user->intro = 1;
+		$current_user->update();
+	}
+}
+
+
+if (isset($_POST['send-chat'])) {
+		if($_POST['hash'] == $_SESSION[$elhash]){
+			//unset($_SESSION[$elhash]);
+			$receiver= $db->escape_value($_POST['receiver']);
+			$message= $db->escape_value($_POST['message']);
+			$chat = new Chat();
+			$chat->sender = $current_user->id;
+			$chat->receiver = $receiver;
+			$chat->msg = $message;
+			$chat->sent_at = strftime("%Y-%m-%d %H:%M:%S" , time());
+			
+			$chat->create();
+		}
+}
+
+
 if(isset($_GET['feed']) && $_GET['feed'] != '' ) {
 	$title = $db->escape_value($_GET['feed']);
 }
@@ -10,7 +50,7 @@ require_once('assets/includes/header.php'); ?>
 
 <div class="row">
 	<?php require_once('assets/includes/lt_sidebar.php'); ?>
-	<div class="col-md-8">
+	<div class="grid col-md-8">
 				<?php
 			if (isset($_GET['edit']) && isset($_GET['msg']) && $_GET['edit'] == "success") :
 			$status_msg = $db->escape_value($_GET['msg']);				
@@ -135,6 +175,26 @@ require_once('assets/includes/header.php'); ?>
 		if($current_user->can_see_this('index.post',$group) && !isset($_GET['feed'])) {
 		?>
 		
+		<?php if($current_user->intro == '0') { ?>
+		<br class="clearfix visible-sm">
+		<div class="bs-callout bs-callout-success" style="">
+			<h4><?php echo $lang['welcome']; ?>, <?php echo $current_user->f_name; ?>!</h4>
+			<form method="post" class="" action="<?php echo $url_mapper['index/'];  ?>">
+					
+					<div class="form-group">
+						<?php echo $lang['welcome-msg']; ?>
+					</div>
+					<div class="form-group col-sm-10">
+						<input class="form-control" name="tags" id="tagsinput" data-role="tagsinput" required value="" >
+					</div>
+					<?php 
+					$_SESSION[$elhash] = $random_hash;
+					echo "<input type=\"hidden\" name=\"hash\" value=\"".$random_hash."\" readonly/>";
+					?>
+				<input class="btn btn-sm btn-success" type="submit" name="update_fav" value="<?php echo $lang['btn-submit']; ?>">
+			</form>
+		</div>
+		<?php } ?>
 		
 		<form action="<?php echo $url_mapper['questions/create'] ?>" method="post" role="form" enctype="multipart/form-data" class="facebook-share-box">
 		<div class="">
@@ -285,7 +345,7 @@ require_once('assets/includes/header.php'); ?>
 					$div_link = " data-link='{$q_link}' class='open_link' ";
 				}
 		?>
-				<div class="question-element">
+				<div class="grid-item question-element">
 					<small><?php $str = $lang['index-question-intro']; $str = str_replace('[VIEWS]' , $q->views , $str); $str = str_replace('[ANSWERS]' , $q->answers , $str); echo $str; ?></small>
 					<h1 class="title"><a href="<?php echo $q_link; ?>"><?php echo strip_tags($q->title); ?></a></h1>
 					<p class="publisher">
@@ -470,7 +530,7 @@ require_once('assets/includes/header.php'); ?>
 			
 			if(isset($pagination) && $pagination->total_pages() > 1) {
 					?>
-					<div class="pagination btn-group">
+					<div class="pagination grid-item btn-group hidden">
 					
 							<?php
 							if ($pagination->has_previous_page()) {
@@ -537,7 +597,7 @@ require_once('assets/includes/header.php'); ?>
 								}
 								$page_param .= $pagination->next_page();
 
-							echo " <a href=\"{$page_param}\" class=\"btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-right']}\"></i></a> ";
+							echo " <a href=\"{$page_param}\" class=\"next-page btn btn-default\" type=\"button\"><i class=\"glyphicon glyphicon-chevron-{$lang['direction-right']}\"></i></a> ";
 							} else {
 							?>
 							<a class="btn btn-default" type="button"><i class="glyphicon glyphicon-chevron-<?php echo $lang['direction-right']; ?>"></i></a>
@@ -561,5 +621,56 @@ require_once('assets/includes/header.php'); ?>
 	
     <?php require_once('assets/includes/preloader.php'); ?>
 	<?php require_once('assets/includes/like-machine.php'); ?>
+	
+<script src="<?php echo WEB_LINK; ?>assets/plugins/tagsinput/bootstrap-tagsinput.js"></script>
+<script src="<?php echo WEB_LINK; ?>assets/plugins/jscroll/jquery.jscroll.js"></script>
+<script>
+	
+	$('<div id="loading_wrap"><div class="com_loading"><center><img src="<?php echo WEB_LINK; ?>assets/img/loading.gif" /> Loading ...</center></div></div>').appendTo('body');
+	<?php if($current_user->intro == '0') { ?>
+	$('input#tagsinput').tagsinput({
+		maxTags: 8,
+		maxChars: 30,
+		trimValue: true,
+		freeInput: false,
+		typeaheadjs: {
+			
+			name: 'tags',
+			displayKey: 'tag',
+			valueKey: 'tag',
+			afterSelect: function(val) { this.$element.val(""); },
+			
+			source: function (query, process) {
+				$.ajax({
+					url: '<?php echo WEB_LINK; ?>assets/includes/one_ajax.php?type=tags_suggestions',
+					type: 'POST',
+					dataType: 'JSON',
+					data: 'id=<?php echo $current_user->id; ?>&data=' + query + '&hash="<?php echo $random_hash; ?>"',
+					success: function(data) {
+						process(data);
+					},
+					error: function(data) {
+						//console.log(data);
+						console.log('No data available!');
+					}
+				});
+			}
+		}
+	});
+	<?php } ?>
+
+$(document).ready(function() {
+	var grid = $('.grid');
+
+		grid.jscroll({
+			loadingHtml: '<div id="loading_wrap"><div class="com_loading"><center><img src="<?php echo WEB_LINK; ?>assets/img/loading.gif" /> Loading ...</center></div></div>',
+			padding: 20,
+			nextSelector: '.next-page',
+			contentSelector: '.grid-item',
+			pagingSelector: '.pagination'
+		});
+});
+	
+</script>	
 	
 <?php require_once('assets/includes/bottom.php'); ?>

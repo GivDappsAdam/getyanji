@@ -262,3 +262,15 @@ $lang['admin-admanager-between_a'] = "Between Answers";
 $lang['notif-a_mention'] = "([NAME]) Has mentioned you in ([TITLE]) question, Click here and join the discussion!";
 $lang['admin-users-username'] = "Username";
 $lang['alert-username_exists'] = 'Username already exists in database! please try again';
+
+
+$lang['welcome'] = 'Welcome';
+$lang['welcome-msg'] = "Please choose your favorite topics you want to follow";
+
+$lang['index-chat-title'] = "Chat";
+$lang['index-chat-no_chat'] = "Click on one of online users to start chatting";
+$lang['index-chat-no_friends'] = "No friends available for chat! Follow your followers back to start chatting with them";
+$lang['index-chat-send'] = "Send";
+$lang['admin-general-chat-title'] = "- Chat Settings -";
+$lang['admin-general-chat-msg'] = "Enable chatting (for users that follow each other)";
+
